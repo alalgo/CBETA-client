@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>reader</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="./resources/js/element-index-2.13.0.js"></script> 
+    <script src="./resources/js/axios.min.js"></script> 	
+    <link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
+	<style>
+	  .el-row {
+		margin-bottom: 20px;
+		&:last-child {
+		  margin-bottom: 0;
+		}
+	  }
+	  .el-col {
+		border-radius: 4px;
+	  }
+	  .grid-content {
+		border-radius: 4px;
+		min-height: 36px;
+	  }
+	  .el-dropdown-link {
+	    margin-left:16px;
+		margin-top:30px;
+		font-size:24px;
+	  }
+	</style>	
+  </head>
+  <body>
+  <div id="app">
+    <!--
+	<el-row>
+	  <el-col :span="4" :offset="3">
+		  <div class="grid-content">
+			  <a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>
+		  </div>	  
+	  </el-col> 
+	</el-row> 
+	-->
+	<el-row >
+	  <el-col :span="2" :offset="1">
+		  <a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>
+		  <el-dropdown >
+			<div class="el-dropdown-link">
+			   目录</i>
+			</div>
+			<el-dropdown-menu slot="dropdown" >
+				<el-dropdown-item v-for="content in contents"  ><a v-on:click="viewChater(content.url)">{{content.name}}</a></el-dropdown-item>
+			</el-dropdown-menu>
+		  </el-dropdown>	
+	  </el-col> 	
+	  <el-col :span="13"  :offset="1" >
+			<div class="grid-content" id="book" style="font-family:Cursive;font-size:140%" onselect="alert('ss')"></div>	
+	  </el-col>
+	  <el-col :span="4"  :offset="1">
+			<span></span>
+	  </el-col>	  
+	</el-row>	
+  </div>
+  </body>
+  <script>
+    //获取 request params值
+	function getQueryStr(name) { 
+	  let reg = `(^|&)${name}=([^&]*)(&|$)`
+	  let r = window.location.search.substr(1).match(reg); 
+	  if (r != null) return unescape(r[2]); return null; 
+	} 
+	//length位数字，不足的前面补0
+	function PrefixInteger(num, length) {
+		return (Array(length).join('0') + num).slice(-length);
+	}
+	function selected(){
+		console.log("wwwww");
+	}		
+    new Vue({
+      el: '#app',
+      data: {
+		info:null,
+		url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+		contents:[],
+        form: {
+          name: '',
+          region: '',
+          date1: '',
+          date2: '',
+          delivery: false,
+          type: [],
+          resource: '',
+          desc: ''
+        },
+        formLabelWidth: '120px'		
+	  },
+	  mounted () {
+	    var work = getQueryStr("work");
+		var juan = getQueryStr("juan");
+		for (i = 1; i <=juan; i++) { 
+			this.contents.push({name:'卷'+i , url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + PrefixInteger(i,3) + '.html'});
+		}
+
+		axios
+		  .get('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html')
+		  .then(response => (
+				document.getElementById('book').innerHTML = response.data
+		  ))
+	  },
+	  methods: {
+		viewChater: function (message) {
+			console.log(message);
+			axios
+			  .get(message)
+			  .then(response => {
+					document.getElementById('book').innerHTML = response.data;
+			  })
+		}
+	  }
+    }) 
+  </script>
+</html>
