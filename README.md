@@ -1,3 +1,9 @@
+[中文简体](./README.md) | [中文繁體](./README-tc.md)
+
+
+本项目为cbeta api客户端，主要提供在线搜索佛经、在线读经功能。目前仅有web pc版本，后续计划开发微信、web mobile版及android、ios客户端。ui界面遵循简洁、方法的原则，方便大众阅读佛经。  
+可在本人基于此项目部署的[网站](https://alalgo.top)(目前只支持中文繁体搜索)在线读 佛经
+
 ### 技术架构
 - 本项目纯前端、无后台    
 - 使用js、ui框架分别为 ：vuejs 、 element-ui
