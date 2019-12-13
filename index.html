@@ -55,7 +55,8 @@
 	</el-row>
 	<el-row >
 	  <el-col :span="10" :offset="7">
-			<el-input v-model="inputvalue" placeholder="经名" @change="submit" suffix-icon="el-icon-search"></el-input>
+			<el-input v-model="inputvalue" placeholder="经名" @change="submitsear" suffix-icon="el-icon-search" icon-click="submitsear">
+			</el-input>
 	  </el-col>
 	  <el-col :span="10" :offset="10">
 		  <div class="poetry">
@@ -75,7 +76,7 @@
 		inputvalue: ''		
 	  },	  
 	  methods: {
-		submit: function () {
+		submitsear: function () {
 			window.location.href = 'results.html?name='+this.inputvalue;
 			//console.log(this.inputvalue);
 		}

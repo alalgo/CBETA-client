@@ -64,7 +64,8 @@
 	  </el-col>	
 	  <el-col :span="8" >
 		<div class="grid-content">
-			<el-input v-model="inputv" placeholder="经名" @keyup.enter.native="searchsubmit" suffix-icon="el-icon-search"></el-input>
+			<el-input v-model="inputv" placeholder="经名" @keyup.enter.native="searchsubmit" suffix-icon="el-icon-search" icon-click="searchsubmit">
+			</el-input>
 		</div>	  
 	  </el-col>
 	</el-row>
