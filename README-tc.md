@@ -1,4 +1,4 @@
-[中文簡體](./README.md) | [中文繁體](./README-tc.md)
+[中文简体](./README.md) | [中文繁體](./README-tc.md)
 
 
 本項目為cbeta api客戶端，主要提供在線搜索佛經、在線讀經功能。目前僅有web pc版本，後續計劃開發微信、mobile客戶端。ui界面遵循簡潔、方法的原則，方便大眾閱讀佛經。  
@@ -32,7 +32,8 @@
 1. ~~讀經頁面章節目錄優化（之前章節過多時無法瀏覽）~~
 1. ~~讀經頁面，章節切換時不能調到新章節的第一行~~
 1. ~~讀經頁面，章節切換時增加 ‘正在加載’ 效果~~
-
+1. 場景：用戶搜索時遲遲在加載中，然後連續輸入其它內容搜索，會有bug（axios 請求接口時，可能會連續請求同一接口，此時返回結果可能不是最後一個請求結果）
+1. ~~搜索結果頁面，將頂部的搜索欄固定不變~~
 
 ### 參考資料
 #### 後臺api
@@ -52,3 +53,6 @@ https://cbdata.dila.edu.tw/v1.2/toc?q=阿含
 繁簡翻譯使用的為[github上開源js](https://github.com/webberwong/js-chinese-TraditionToSimple),引入兩個js文件分別為：
 - resources\js\FontsLib.js
 - resources\js\TraditionToSimple_CN.js
+
+整體的界面搜索風格模仿google
+功能上參考[cbetaonline](http://cbetaonline.dila.edu.tw/zh/T0001_011)、[凈念書院](https://jnbooks.cn/)

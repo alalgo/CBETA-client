@@ -32,7 +32,8 @@
 1. ~~读经页面章节目录优化（之前章节过多时无法浏览）~~
 1. ~~读经页面，章节切换时不能调到新章节的第一行~~
 1. ~~读经页面，章节切换时增加 ‘正在加载’ 效果~~
-
+1. 场景：用户搜索时迟迟在加载中，然后连续输入其它内容搜索，会有bug（axios 请求接口时，可能会连续请求同一接口，此时返回结果可能不是最后一个请求结果）
+1. ~~搜索结果页面，将顶部的搜索栏固定不变~~
 
 ### 参考资料
 #### 后台api
@@ -52,3 +53,6 @@ https://cbdata.dila.edu.tw/v1.2/toc?q=阿含
 繁简翻译使用的为[github上开源js](https://github.com/webberwong/js-chinese-TraditionToSimple),引入两个js文件分别为：
 - resources\js\FontsLib.js
 - resources\js\TraditionToSimple_CN.js
+
+整体的界面搜索风格模仿google
+功能上参考[cbetaonline](http://cbetaonline.dila.edu.tw/zh/T0001_011)、[净念书院](https://jnbooks.cn/)

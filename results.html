@@ -11,6 +11,13 @@
 	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />	
     <link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
 	<style>
+	  #title{
+		position:fixed;
+		width: 1423px;
+		background-color:white;
+		z-index:999;/*置于最上层*/
+		margin-top: -8px;
+	  }
 	  .el-row {
 		margin-bottom: 20px;
 		&:last-child {
@@ -30,36 +37,47 @@
 	  .icon {
 		margin-top:-10px;
 	  }
-		/* 未访问链接*/
-		a:link {
-			text-decoration:none;
-		}  
-		/* 已访问链接 */		
-		a:visited {
-			text-decoration:none;
-		} 
-		/* 鼠标移动到链接上 */		
-		a:hover {
-			text-decoration:none;
-		}  
-		/* 鼠标点击时 */
-		a:active {
-			text-decoration:none;
-		}
-		.hreftext {
-			font-size: 17px;
-		}
-		.detailinfo{
-			font-size: 13px;
-		}
-		.searchresult{
-			margin-left: -36px;
-		}
+  	  a {
+  	  	letter-spacing:2px;
+  	  }
+  	  /* 未访问链接*/
+  	  a:link {
+  	  	text-decoration:none;
+  	  	color:#1a0dab;
+  	  }  
+  	  /* 已访问链接 */		
+  	  a:visited {
+  	  	text-decoration:none;
+  	  } 
+  	  /* 鼠标移动到链接上 */		
+  	  a:hover {
+  	  	text-decoration:none;
+  	  }  
+  	  /* 鼠标点击时 */
+  	  a:active {
+  	  	text-decoration:none;
+  	  }
+  	  .hreftext {
+  	  	font-size: 17px;
+  	  }
+  	  .detailinfo{
+  	  	font-size: 15px;
+  	  }
+  	  .searchresult{
+  	  	margin-left: -36px;		
+  	  }
+	  #contexts{
+		top:60px;
+		margin-bottom:55px;
+	  }
+	  .failmsg{
+		margin-left: 27px;
+	  }
 	</style>	
   </head>
   <body>
-  <div id="app"> 
-	<el-row >
+  <div id="app">
+	<el-row id="title">
 	  <el-col :span="1" :offset="1">
 		  <div class="icon">
 			  <a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="60px" height="60px" /></a>
@@ -72,8 +90,7 @@
 		</div>	  
 	  </el-col>
 	</el-row>
-	
-	<el-row >	
+	<el-row id="contexts">	
 	    <el-col :span="15" :offset="3"  v-for="result in resultsTemp">				
 			<div  class="searchresult">				
 				<a  class="hreftext" v-bind:href="'reader.html?work=' + result.work + '&juan=' + result.juan">{{result.title}}</a>
@@ -87,7 +104,7 @@
 	
 	<el-row v-loading="loading" element-loading-text="正在搜索">
 		<el-col :span="15" :offset="2" v-if="requesterror">
-			<span>查询失败,尽量输入精确的书名</span>
+			<span class="failmsg">查询失败,尽量输入精确的书名</span>
 		</el-col>	
 	    <el-col :span="14" :offset="2">	  
 			<div class="block">
@@ -212,7 +229,7 @@
 			//搜索内容为空时不请求接口
 			if(context == null || context == ''){
 				return;
-			}		
+			}
 			//搜索时页面显示在加载中
 			this.loading = true;	
 			//请求接口搜索
@@ -233,13 +250,13 @@
 			  		this.handleCurrentChange(1);
 			  		//搜索结束后关掉在加载中
 			  		this.loading = false;			
-			    }).catch(error => {
+			    }).catch(error => {		
 					//请求超时或错误时页面提示
 					this.loading = false;
 					this.requesterror = true;
 			    }
-			);		
-		}		
+			);
+		}	
 	  }	  
     }) 
 	
