@@ -23,42 +23,96 @@
 		min-height: 36px;
 	  }
 	  .el-dropdown-link {
-	    margin-l
-		eft:16px;
-		margin-top:30px;
+	    margin-left:-78px;
 		font-size:24px;
+		position:relative;
+		top:30px;
+	  }
+	  .explainContextclass {
+		position:fixed;
+		top:14px;
+	  }
+	  .tools{
+		margin-left:246px;
+		margin-bottom:24px;
+	  }
+	  .left{
+		position:fixed;
+	  }
+  	  .list1  {
+	    max-height: 650px;
+	    
+	  }	
+	  .list2  {
+	    max-height: 660px;
+	  		  
+	  }			
+	  /* 未访问链接*/
+	  a:link {
+	  	text-decoration:none;
+	  }  
+	  /* 已访问链接 */		
+	  a:visited {
+	  	text-decoration:none;
+	  } 
+	  /* 鼠标移动到链接上 */		
+	  a:hover {
+	  	text-decoration:none;
+		cursor:pointer;
+	  }  
+	  /* 鼠标点击时 */
+	  a:active {
+	  	text-decoration:none;
+	  }
+	  ul{
+	  	list-style-type: none; /*去掉标点*/
+	  	line-height:26px;
+	  	margin-left:-27px;
 	  }
 	</style>	
   </head>
   <body>
   <div id="app">
-    <!--
-	<el-row>
-	  <el-col :span="4" :offset="3">
-		  <div class="grid-content">
-			  <a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>
-		  </div>	  
-	  </el-col> 
-	</el-row> 
-	-->
 	<el-row >
 	  <el-col :span="2" :offset="1">
-		  <a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>
-		  <el-dropdown >
-			<div class="el-dropdown-link">
-			   目录</i>
-			</div>
-			<el-dropdown-menu slot="dropdown" >
-				<el-dropdown-item v-for="content in contents"  ><a v-on:click="viewChater(content.url)">{{content.name}}</a></el-dropdown-item>
-			</el-dropdown-menu>
-		  </el-dropdown>	
+		  <div class="left">
+			<a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>	
+				<el-scrollbar 	
+					wrap-class="list1" 
+					wrap-style="font-family:Cursive;" 
+					view-style="" 
+					view-class="view-box" 
+					:native="false">
+					<ul>
+						<li v-for="content in contents"><a  v-on:click="axiosrequest(content.url)">{{content.name}}</a></li>
+					</ul>
+				</el-scrollbar>
+		  </div>		  
 	  </el-col> 	
-	  <el-col :span="13"  :offset="1" >
-			<div class="grid-content" id="book" style="font-family:Cursive;font-size:140%" onselect="alert('ss')"></div>	
+	  <el-col :span="13"  :offset="4" v-loading="loading" element-loading-text="正在加载">
+			<div class="grid-content" id="book" style="font-family:Cursive;font-size:140%" @mouseup = "selectcontent"></div>	
 	  </el-col>
 	  <el-col :span="4"  :offset="1">
-			<span></span>
-	  </el-col>	  
+		<div class='explainContextclass'>
+			<div class="tools">
+				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>
+				&nbsp &nbsp				
+				<a title='繁简翻译'>繁/简</a>	
+			</div>
+			<el-scrollbar 	
+				wrap-class="list2" 
+				wrap-style="color: #868181;font-family:Cursive;" 
+				view-style="" 
+				view-class="view-box1" 
+				:native="false">	  
+				<div   style="font-family:Cursive; font-size:114%; color:#868181;"  v-for="result in explainContext">
+					{{result.term}}: {{result.desc.substring(0,result.desc.length-5)}}
+					<br/>
+					&nbsp &nbsp &nbsp &nbsp--《{{result.dict_name_zh}}》
+				</div>
+			</el-scrollbar>
+		</div>
+	  </el-col>	
 	</el-row>	
   </div>
   </body>
@@ -73,14 +127,11 @@
 	function PrefixInteger(num, length) {
 		return (Array(length).join('0') + num).slice(-length);
 	}
-	function selected(){
-		console.log("wwwww");
-	}		
+		
     new Vue({
       el: '#app',
       data: {
 		info:null,
-		url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
 		contents:[],
         form: {
           name: '',
@@ -92,7 +143,9 @@
           resource: '',
           desc: ''
         },
-        formLabelWidth: '120px'		
+        formLabelWidth: '120px',
+		explainContext: null,
+		loading:false,		
 	  },
 	  mounted () {
 	    var work = getQueryStr("work");
@@ -100,21 +153,38 @@
 		for (i = 1; i <=juan; i++) { 
 			this.contents.push({name:'卷'+i , url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + PrefixInteger(i,3) + '.html'});
 		}
-
-		axios
-		  .get('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html')
-		  .then(response => (
-				document.getElementById('book').innerHTML = response.data
-		  ))
+		this.axiosrequest('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html');
 	  },
 	  methods: {
-		viewChater: function (message) {
-			console.log(message);
+		axiosrequest: function (url){
+			this.loading = true;
 			axios
-			  .get(message)
+			  .get(url)
 			  .then(response => {
 					document.getElementById('book').innerHTML = response.data;
-			  })
+					this.loading = false;
+					//新章节从第一行开始展示
+					document.body.scrollTop = document.documentElement.scrollTop = 0;
+			  }).catch(error => {
+					this.loading = false;
+			  }			  			  
+			);		
+		},
+		/*
+		*获取鼠标选中文本
+		*/
+		selectcontent: function (e) {
+		    var content = window.getSelection().toString();
+			if(content != null && content != ''){
+				var url = 'http://glossaries.dila.edu.tw/search.json?type=match&term=' + content
+				axios
+				  .get(url)
+				  .then(response => {
+						this.explainContext = response.data.filter(function(item){
+							return item.dict_name_zh === "丁福保佛學大辭典";
+						});							
+				  })				
+			}			
 		}
 	  }
     }) 

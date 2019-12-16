@@ -5,6 +5,8 @@
     <title>首页</title>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script src="./resources/js/element-index-2.13.0.js"></script>  	
+	<script src="./resources/js/FontsLib.js"></script>
+    <script src="./resources/js/TraditionToSimple_CN.js"></script>	
 	<style>
 	  .el-row {
 		margin-bottom: 20px;
@@ -78,8 +80,9 @@
 	  },	  
 	  methods: {
 		submitsear: function () {
-			window.location.href = 'results.html?name='+this.inputvalue;
-			//console.log(this.inputvalue);
+			var t2s = new TraditionToSimple_CN(); 
+			var tradtion_input = t2s.toTraditionalized(this.inputvalue);
+			window.location.href = 'results.html?name='+tradtion_input;
 		}
 	  }	  
     }) 

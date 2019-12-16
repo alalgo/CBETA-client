@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>经文阅读</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="./resources/js/element-index-2.13.0.js"></script>  
+    <script src="./resources/js/axios.min.js"></script>   	
+	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />	
+    <link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
+	<style>
+
+	</style>	
+  </head>
+  <body>
+<div id="app">
+  <h2>list:</h2>
+  <el-scrollbar 
+	wrap-class="lists" 
+	wrap-style="color: red;" 
+	view-style="font-weight: bold;" 
+	view-class="view-box" 
+	:native="false">
+		<li v-for="value in num" :key="vlaue">
+		  {{value}}
+		</li>
+  </el-scrollbar>
+</div>
+  </body>
+  <script>		
+new Vue({
+  el: "#app",
+  data: {
+    num: 30
+  }
+})
+  </script>
+</html>

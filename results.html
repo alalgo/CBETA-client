@@ -5,7 +5,9 @@
     <title>搜索结果</title>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="./resources/js/element-index-2.13.0.js"></script>  
-    <script src="./resources/js/axios.min.js"></script>   	
+    <script src="./resources/js/axios.min.js"></script> 
+	<script src="./resources/js/FontsLib.js"></script>
+    <script src="./resources/js/TraditionToSimple_CN.js"></script>	  	
 	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />	
     <link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
 	<style>
@@ -196,6 +198,8 @@
 			this.resultsTemp = [];
 			this.filterResult = [];
 			//请求接口搜索
+			var t2s = new TraditionToSimple_CN(); 
+			this.inputv = t2s.toTraditionalized(this.inputv);
 			this.axiosRequest(this.inputv);
 			//不刷新修改浏览器url参数，为了刷新时仍然查询当前页面搜索框中内容
 			var state = {title:'',url:window.location.href};
@@ -215,7 +219,7 @@
 			this.requesterror = false;
 			const axiosInstance = axios.create({
 			  baseURL: 'https://cbdata.dila.edu.tw/v1.2',
-			  timeout: 6000,
+			  timeout: 8000,
 			});			
 			axiosInstance
 			    .get('toc?q='+context)
