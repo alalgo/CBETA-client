@@ -205,7 +205,9 @@
 			  if (list[from]) {
 				this.resultsTemp.push(list[from]);
 			  }
-			}
+			};
+			//翻页时，滚动条回到头部
+			document.body.scrollTop = document.documentElement.scrollTop = 0;
 		},		
 		/*
 		*搜索结果页面搜索输入框回车的搜索方法
