@@ -7,6 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="./resources/js/element-index-2.13.0.js"></script> 
     <script src="./resources/js/axios.min.js"></script> 
+	<script src="./resources/js/FontsLib.js"></script>
+    <script src="./resources/js/TraditionToSimple_CN.js"></script>		
 	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />
     <link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
 	<style>
@@ -70,6 +72,13 @@
 	  	line-height:26px;
 	  	margin-left:-27px;
 	  }
+	  #translate{
+		font-family:Cursive; font-size:114%; color:#868181;
+	  }
+	  #failmsg {
+		margin-top:67px;
+		margin-left: 108px;
+	  }
 	</style>	
   </head>
   <body>
@@ -91,27 +100,31 @@
 		  </div>		  
 	  </el-col> 	
 	  <el-col :span="13"  :offset="4" v-loading="loading" element-loading-text="正在加载">
+			<div id="failmsg" v-if="requesterror">加载失败请刷新重试</div>
 			<div class="grid-content" id="book" style="font-family:Cursive;font-size:140%" @mouseup = "selectcontent"></div>	
 	  </el-col>
 	  <el-col :span="4"  :offset="1">
 		<div class='explainContextclass'>
 			<div class="tools">
 				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>
-				&nbsp &nbsp				
-				<a title='繁简翻译'>繁/简</a>	
+				<!--&nbsp &nbsp				
+				<a title='繁简翻译'>繁/简</a>	-->
 			</div>
-			<el-scrollbar 	
-				wrap-class="list2" 
-				wrap-style="color: #868181;font-family:Cursive;" 
-				view-style="" 
-				view-class="view-box1" 
-				:native="false">	  
-				<div   style="font-family:Cursive; font-size:114%; color:#868181;"  v-for="result in explainContext">
-					{{result.term}}: {{result.desc.substring(0,result.desc.length-5)}}
-					<br/>
-					&nbsp &nbsp &nbsp &nbsp--《{{result.dict_name_zh}}》
-				</div>
-			</el-scrollbar>
+			<div id='translate'>
+				<el-scrollbar 	
+					wrap-class="list2" 
+					wrap-style="color: #868181;font-family:Cursive;" 
+					view-style="" 
+					view-class="view-box1" 
+					:native="false">
+					<div>{{simpleChineseContext}}</div>
+					<div v-for="result in explainContext">
+						{{result.term}}: {{result.desc.substring(0,result.desc.length-5)}}
+						<br/>
+						&nbsp &nbsp &nbsp &nbsp--《{{result.dict_name_zh}}》
+					</div>
+				</el-scrollbar>
+			</div>
 		</div>
 	  </el-col>	
 	</el-row>	
@@ -146,7 +159,9 @@
         },
         formLabelWidth: '120px',
 		explainContext: null,
-		loading:false,		
+		loading:false,
+		simpleChineseContext:'',
+		requesterror:false
 	  },
 	  mounted () {
 	    var work = getQueryStr("work");
@@ -159,6 +174,7 @@
 	  methods: {
 		axiosrequest: function (url){
 			this.loading = true;
+			this.requesterror = false;
 			axios
 			  .get(url)
 			  .then(response => {
@@ -167,6 +183,7 @@
 					//新章节从第一行开始展示
 					document.body.scrollTop = document.documentElement.scrollTop = 0;
 			  }).catch(error => {
+					this.requesterror = true;
 					this.loading = false;
 			  }			  			  
 			);		
@@ -176,16 +193,25 @@
 		*/
 		selectcontent: function (e) {
 		    var content = window.getSelection().toString();
-			if(content != null && content != ''){
-				var url = 'http://glossaries.dila.edu.tw/search.json?type=match&term=' + content
-				axios
-				  .get(url)
-				  .then(response => {
-						this.explainContext = response.data.filter(function(item){
-							return item.dict_name_zh === "丁福保佛學大辭典";
-						});							
-				  })				
-			}			
+			//未选中，避免无缘由滥用接口
+			if(content == null && content == ''){
+				return;
+			}		
+			var t2s = new TraditionToSimple_CN(); 
+			this.simpleChineseContext = t2s.toSimplized(content);
+			//选中内容过多均不查询词典，避免无缘由滥用接口
+			if(content.length > 10){
+				return;
+			}
+			var url = 'http://glossaries.dila.edu.tw/search.json?type=match&term=' + content
+			axios
+			.get(url)
+			.then(response => {
+					this.explainContext = response.data.filter(function(item){
+						return item.dict_name_zh === "丁福保佛學大辭典";
+					});							
+			})				
+						
 		}
 	  }
     }) 

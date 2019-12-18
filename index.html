@@ -32,17 +32,32 @@
 		letter-spacing:9px;
 		line-height:38px;
 	  }
+	  a {
+		text-decoration:none;
+	  }
 	</style>
-	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />
+	<link rel="shortcut icon" href="./resources/images/www.ico" type="image/x-icon" />
 	<link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
 
   </head>
   <body>
   <div id="app">
 	<el-row>
-	  <el-col :span="1" :offset="20"><div class="grid-content">书架</div></el-col>	
-	  <el-col :span="1" ><div class="grid-content">繁/简</div></el-col>
-	  <el-col :span="2" ><div class="grid-content">问题与建议</div></el-col>	  
+	  <el-col :span="1" :offset="22">
+		  <div class="grid-content">
+			<a href="./bookshelf.html" title='书架'>
+				<img src="./resources/images/bookshelf.png" alt="picture" width="30px" height="30px" />
+			</a>
+		  </div>
+	   </el-col>	
+	  <!--<el-col :span="1" ><div class="grid-content">繁/简</div></el-col>-->
+	  <el-col :span="1" >
+		  <div class="grid-content">
+			  <a href="https://github.com/alalgo/CBETA-client/issues" title='问题与建议'>
+				<img src="./resources/images/feedback.png" alt="picture" width="30px" height="30px" />	  
+			  </a>
+		  </div>
+	  </el-col>	  
 	</el-row> 
 	<el-row><el-col ></el-col></el-row> 
 	<el-row><el-col ></el-col></el-row> 
@@ -58,7 +73,7 @@
 	</el-row>
 	<el-row >
 	  <el-col :span="10" :offset="7">
-			<el-input v-model="inputvalue" placeholder="经名" @change="submitsear" suffix-icon="el-icon-search" icon-click="submitsear">
+			<el-input v-model="inputvalue" placeholder="经名  繁/简" @change="submitsear" suffix-icon="el-icon-search" icon-click="submitsear">
 			</el-input>
 	  </el-col>
 	  <el-col :span="10" :offset="10">
@@ -75,7 +90,6 @@
     new Vue({
       el: '#app',
       data: {
-		url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
 		inputvalue: ''		
 	  },	  
 	  methods: {
