@@ -24,6 +24,10 @@
 	  a {
 		text-decoration:none;
 	  }
+	  /* 鼠标点击时 */
+	  a:active {
+	  	color: #be9567;
+	  }	  
 	  ul{
 	  	list-style-type: none; /*去掉标点*/
 		line-height:25px;
@@ -47,13 +51,13 @@
 		border:1px dashed #000;
 		float: left;
 		text-align:center;
-		height:78px;
+		height:70px;
 		margin:6px 13px; /*上下、左右外边距*/
-		padding:5px 13px; /*上下、左右内边距*/
+		padding:3px 13px; /*上下、左右内边距*/
 	  }
 	  .bookname {
 		font-size:20px;
-		margin-bottom:-6px;
+		margin-bottom:-19px;
 		margin-top:1px;
 		letter-spacing:1px;
 	  }
@@ -61,7 +65,7 @@
 		font-family:Cursive;
 	  }
 	</style>
-	<link rel="shortcut icon" href="./resources/images/www.ico" type="image/x-icon" />
+	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />
 	<link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
   </head>
   <body>
@@ -72,7 +76,7 @@
 				<a id="icons" href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>			
 				<ul>
 					<li v-for="category in filteredCategories">
-						<a :id="category.id" href="#" v-on:click="requestArticles(category.url)">{{category.name}}</a>
+						<a name="catetoryna" :id="category.id" href="#" v-on:click="requestArticles(category.url)">{{category.name}}</a>
 					</li>
 				</ul>
 			</div>
@@ -124,15 +128,6 @@
 				this.categories = response.data.results;
 				for (i = 1; i <= this.categories.length; i++) {
 					var categorylabel = this.categories[i-1].label;
-					/*
-					//每部卷数
-					var index1 = categorylabel.indexOf('(');
-					var index2 = categorylabel.indexOf('-',categorylabel.indexOf('-')+1);
-					var index3 = categorylabel.indexOf(')');
-					var juan_begin = categorylabel.substring(index1+2,index2).replace(/\b(0+)/gi,"");
-					var juan_end = categorylabel.substring(index2+1,index3);
-					var juan_num = juan_end - juan_begin;
-					*/
 					var InterceptName = categorylabel.substring(5);
 					var item = {"name":InterceptName.substring(0,InterceptName.indexOf('T')),
 								"url":'http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T'+PrefixInteger(i,2),
@@ -157,10 +152,13 @@
 				.get(url)
 				.then(response => {
 					this.pages = response.data.results;
-					//已经显示数量的不要重复显示
-					if(categoryname.indexOf('[') < 0){
-						document.getElementById(categoryid).innerHTML = categoryname + '[' + response.data.num_found + '部]';
-					}
+					//已经显示数量的清除先					
+					var items = document.getElementsByName('catetoryna');
+					for(i=0;i<items.length;i++){
+						if(items[i].innerHTML.indexOf('[') > 0)
+							items[i].innerHTML=items[i].innerHTML.substring(0,items[i].innerHTML.indexOf('['));
+					}	
+					document.getElementById(categoryid).innerHTML = categoryname + '[' + response.data.num_found + '部]';
 					for (i = 0; i < this.pages.length; i++) {
 						var label = this.pages[i].label;
 						var index0 = label.indexOf(' ');
@@ -170,7 +168,7 @@
 						var item = {"name":name,
 									"creators":this.pages[i].creators,
 									"juan":juan,
-									"url":'reader.html?work=' + this.pages[i].work + '&juan=' + juan
+									"url":'reader.html?work=' + this.pages[i].work + '&juan=' + juan + '&bookname=' + name
 								   }
 						this.filterpages.push(item);
 					}

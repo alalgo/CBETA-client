@@ -94,7 +94,7 @@
 	<el-row id="contexts">	
 	    <el-col :span="15" :offset="3"  v-for="result in resultsTemp">				
 			<div  class="searchresult">				
-				<a  class="hreftext" v-bind:href="'reader.html?work=' + result.work + '&juan=' + result.juan">{{result.title}}</a>
+				<a  class="hreftext" v-bind:href="'reader.html?work=' + result.work + '&juan=' + result.juan+ '&bookname=' + result.title">{{result.title}}</a>
 				<br>
 				<span class="detailinfo">（{{result.juan}}卷） {{result.time_dynasty}}.{{result.creators}}</span> 
 				&nbsp &nbsp 

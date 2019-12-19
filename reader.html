@@ -24,6 +24,7 @@
 	  .grid-content {
 		border-radius: 4px;
 		min-height: 36px;
+		margin-top:25px;
 	  }
 	  .el-dropdown-link {
 	    margin-left:-78px;
@@ -79,30 +80,81 @@
 		margin-top:67px;
 		margin-left: 108px;
 	  }
+	  /*阅读进度条*/
+	  #content_progress {
+	  	  /* Positioning */
+	  	  position: fixed;
+	  	  left: 0;
+	  	  top: 0;
+	  	  z-index: 1000;
+	  	  width: 100%;
+	  	  height: 2px;
+	  	  -webkit-appearance: none;
+	  	  -moz-appearance: none;
+	  	  appearance: none;
+	  	  border: none;
+	  	  background-color: transparent;
+	  	  color: #be9567;
+	  }
+      
+	  #content_progress::-webkit-progress-bar {
+	  	  background-color: transparent;
+	  }
+      
+	  #content_progress::-webkit-progress-value {
+	  	  background-color: #be9567;
+	  }
+      
+	  #content_progress::-moz-progress-bar {
+	  	  background-color: #be9567;
+	  }
+	  #booknameid {
+		margin: auto;
+		top: 0;
+		margin-left: 133px;
+		height:26px;
+		width:935px;
+		position:fixed;
+		margin-bottom:4px;
+		text-align:center;
+		background-color:white;
+		z-index:999;
+		color:#be9567;
+	  }	
+	  .selectedChapter {
+		color:#be9567;
+	  }
 	</style>	
   </head>
   <body>
   <div id="app">
+	<progress id="content_progress" value="0"></progress>
 	<el-row >
+		<div id='booknameid'>{{bookname}}</div>
+	</el-row >	
+	<el-row >
+	  <!-- 左侧区域 返回主页图标 + 目录-->
 	  <el-col :span="2" :offset="1">
 		  <div class="left">
-			<a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>	
-				<el-scrollbar 	
-					wrap-class="list1" 
-					wrap-style="font-family:Cursive;" 
-					view-style="" 
-					view-class="view-box" 
-					:native="false">
-					<ul>
-						<li v-for="content in contents"><a  v-on:click="axiosrequest(content.url)">{{content.name}}</a></li>
-					</ul>
-				</el-scrollbar>
+			<a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>
+			<el-scrollbar 	
+				wrap-class="list1" 
+				wrap-style="font-family:Cursive;" 
+				view-style="" 
+				view-class="view-box" 
+				:native="false">
+				<ul>
+					<li v-for="content in contents"><a name="chapterlink" :id="content.id"  v-on:click="selectchapter(content.url)">{{content.name}}</a></li>
+				</ul>
+			</el-scrollbar>
 		  </div>		  
-	  </el-col> 	
+	  </el-col> 
+	  <!-- 中间区域 经文-->
 	  <el-col :span="13"  :offset="4" v-loading="loading" element-loading-text="正在加载">
 			<div id="failmsg" v-if="requesterror">加载失败请刷新重试</div>
 			<div class="grid-content" id="book" style="font-family:Cursive;font-size:140%" @mouseup = "selectcontent"></div>	
 	  </el-col>
+	  <!-- 右侧区域 发送kindle + 翻译 + 改变字体大小 -->
 	  <el-col :span="4"  :offset="1">
 		<div class='explainContextclass'>
 			<div class="tools">
@@ -135,7 +187,9 @@
 	function getQueryStr(name) { 
 	  let reg = `(^|&)${name}=([^&]*)(&|$)`
 	  let r = window.location.search.substr(1).match(reg); 
-	  if (r != null) return unescape(r[2]); return null; 
+	  if (r != null)  
+		return decodeURI(r[2]); 
+	  return null; 
 	} 
 	//length位数字，不足的前面补0
 	function PrefixInteger(num, length) {
@@ -161,18 +215,47 @@
 		explainContext: null,
 		loading:false,
 		simpleChineseContext:'',
-		requesterror:false
+		requesterror:false,
+		bookname:''
 	  },
 	  mounted () {
 	    var work = getQueryStr("work");
 		var juan = getQueryStr("juan");
+		this.bookname = getQueryStr("bookname");
 		for (i = 1; i <=juan; i++) { 
-			this.contents.push({name:'卷'+i , url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + PrefixInteger(i,3) + '.html'});
+			this.contents.push({name:'卷'+i , 
+								url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + PrefixInteger(i,3) + '.html',
+								id: 'chapter'+i
+							});
 		}
-		this.axiosrequest('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html');
-	  },
+		this.axiosrequest('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html','init');
+		//阅读进度条
+		document.addEventListener('DOMContentLoaded', function () {
+			  var winHeight = window.innerHeight,
+					docHeight = document.documentElement.scrollHeight,
+					progressBar = document.querySelector('#content_progress');
+			  progressBar.max = docHeight - winHeight;
+			  progressBar.value = window.scrollY;
+
+			  document.addEventListener('scroll', function () {
+					progressBar.max = document.documentElement.scrollHeight - window.innerHeight;
+					progressBar.value = window.scrollY;
+			  });
+		});		
+	  },	 
 	  methods: {
-		axiosrequest: function (url){
+		selectchapter: function(url){
+			//选择章节后，此章节目录文字样式改变（先清空之前样式）
+			var items = document.getElementsByName('chapterlink');
+			for(i=0;i<items.length;i++){
+				items[i].className='';
+			}
+			var chapterid = window.event.target.id;
+			document.getElementById(chapterid).className = 'selectedChapter';
+			
+			this.axiosrequest(url);
+		},
+		axiosrequest: function (url,param1){						
 			this.loading = true;
 			this.requesterror = false;
 			axios
@@ -182,6 +265,10 @@
 					this.loading = false;
 					//新章节从第一行开始展示
 					document.body.scrollTop = document.documentElement.scrollTop = 0;
+					if(param1 == 'init'){
+						//初始化时加载第一章节，此章节目录文字样式改变
+						document.getElementById('chapter1').className='selectedChapter';
+					}
 			  }).catch(error => {
 					this.requesterror = true;
 					this.loading = false;
@@ -189,7 +276,7 @@
 			);		
 		},
 		/*
-		*获取鼠标选中文本
+		*获取鼠标选中文本，然后繁简翻译、查询佛学词典
 		*/
 		selectcontent: function (e) {
 		    var content = window.getSelection().toString();
