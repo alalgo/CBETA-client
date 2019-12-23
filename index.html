@@ -72,8 +72,13 @@
 	</el-row>
 	<el-row >
 	  <el-col :span="10" :offset="7">
-			<el-input v-model="inputvalue" placeholder="经名  繁/简" @change="submitsear" suffix-icon="el-icon-search" icon-click="submitsear">
+			<!--
+			<el-input v-model="inputvalue" placeholder="经名  繁/简" @change="submitsear"   suffix-icon="el-icon-search" icon-click="submitsear">
 			</el-input>
+			-->
+		    <el-input placeholder="经名  繁/简" v-model="inputvalue" class="input-with-select" @change="submitsear" >
+				<el-button slot="append" icon="el-icon-search"></el-button>
+		    </el-input>
 	  </el-col>
 	  <el-col :span="10" :offset="10">
 		  <div class="poetry">
@@ -86,6 +91,7 @@
   </body>
 
   <script>
+  //@change="submitsear"  onkeyup="submitsear" 
     new Vue({
       el: '#app',
       data: {

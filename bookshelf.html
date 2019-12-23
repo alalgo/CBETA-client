@@ -6,7 +6,8 @@
     <title>书架</title>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script src="./resources/js/element-index-2.13.0.js"></script>  
-	<script src="./resources/js/axios.min.js"></script> 
+	<!--<script src="./resources/js/axios.min.js"></script>-->
+	<script src="./resources/js/jquery-3.4.1.min.js"></script>	
 	<style>
 	  .el-row {
 		margin-bottom: 20px;
@@ -53,7 +54,7 @@
 		text-align:center;
 		height:70px;
 		margin:6px 13px; /*上下、左右外边距*/
-		padding:9px 13px; /*上下、左右内边距*/
+		padding:4px 13px; /*上下、左右内边距*/
 	  }
 	  .bookname {
 		font-size:20px;
@@ -117,7 +118,8 @@
 		filterpages:[],
 		showIntroduce:true
 	  },
-	  mounted () {
+	  mounted: function () {
+	    /*
 		const axiosInstance = axios.create({
 		  baseURL: 'http://cbdata.dila.edu.tw/v1.2/catalog_entry?q=Cat-T',
 		  timeout: 8000,
@@ -139,12 +141,44 @@
 				//请求超时或错误时页面提示
 			}
 		);
+		*/
+		var _self=this;
+		$.ajax({
+			url: "http://cbdata.dila.edu.tw/v1.2/catalog_entry",    //请求的url地址
+			dataType: "json",   //返回格式为json
+			async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+			data: { "q": "Cat-T" },    //参数值
+			type: "GET",   //请求方式
+			beforeSend: function() {
+				//请求前的处理
+			},
+			success: function(response) {
+				//请求成功时处理
+				_self.categories = response.results;
+				for (i = 1; i <= _self.categories.length; i++) {
+					var categorylabel = _self.categories[i-1].label;
+					var InterceptName = categorylabel.substring(5);
+					var item = {"name":InterceptName.substring(0,InterceptName.indexOf('T')),
+								"url":'http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T'+PrefixInteger(i,2),
+								"id":_self.categories[i-1].n.substring(6,9)
+							   }
+					_self.filteredCategories.push(item);
+				 }		
+			},
+			complete: function() {
+				//请求完成的处理
+			},
+			error: function() {
+				//请求出错处理
+			}
+		});		
 	  },
 	  methods:{
 		requestArticles: function(url){
 			var categoryid = window.event.target.id;
 			var categoryname = window.event.target.innerHTML;
 			this.filterpages = [];
+			/*
 			const axiosInstance = axios.create({
 			  timeout: 8000,
 			});			
@@ -178,6 +212,39 @@
 					//请求超时或错误时页面提示
 				}
 			);
+			*/
+			var _self=this;
+			$.ajax({
+				url: url,    
+				dataType: "json",
+				async: true,
+				type: "GET",   //请求方式
+				success: function(response) {
+					_self.pages = response.results;
+					//已经显示数量的清除先					
+					var items = document.getElementsByName('catetoryna');
+					for(i=0;i<items.length;i++){
+						if(items[i].innerHTML.indexOf('[') > 0)
+							items[i].innerHTML=items[i].innerHTML.substring(0,items[i].innerHTML.indexOf('['));
+					}	
+					document.getElementById(categoryid).innerHTML = categoryname + '[' + response.num_found + '部]';
+					for (i = 0; i < _self.pages.length; i++) {
+						var label = _self.pages[i].label;
+						var index0 = label.indexOf(' ');
+						var index1 = label.indexOf('(');
+						var name = label.substring(index0+1,index1);
+						var juan = label.substring(index1+1,index1+2);
+						var item = {"name":name,
+									"creators":_self.pages[i].creators,
+									"juan":juan,
+									"url":'reader.html?work=' + _self.pages[i].work + '&juan=' + juan + '&bookname=' + name
+								   }
+						_self.filterpages.push(item);
+					}
+					//隐藏大藏经介绍文字
+					_self.showIntroduce=false;	
+				}
+			});
 		},
 		readbook: function(url){
 			window.location.href = url;

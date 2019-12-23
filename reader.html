@@ -6,7 +6,8 @@
     <title>经文阅读</title>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="./resources/js/element-index-2.13.0.js"></script> 
-    <script src="./resources/js/axios.min.js"></script> 
+    <!--<script src="./resources/js/axios.min.js"></script> -->
+	<script src="./resources/js/jquery-3.4.1.min.js"></script>
 	<script src="./resources/js/FontsLib.js"></script>
     <script src="./resources/js/TraditionToSimple_CN.js"></script>		
 	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />
@@ -185,8 +186,8 @@
   <script>
     //获取 request params值
 	function getQueryStr(name) { 
-	  let reg = `(^|&)${name}=([^&]*)(&|$)`
-	  let r = window.location.search.substr(1).match(reg); 
+	  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
+	  var r = window.location.search.substr(1).match(reg); 
 	  if (r != null)  
 		return decodeURI(r[2]); 
 	  return null; 
@@ -218,7 +219,7 @@
 		requesterror:false,
 		bookname:''
 	  },
-	  mounted () {
+	  mounted: function () {
 	    var work = getQueryStr("work");
 		var juan = getQueryStr("juan");
 		this.bookname = getQueryStr("bookname");
@@ -255,9 +256,8 @@
 			
 			this.axiosrequest(url);
 		},
-		axiosrequest: function (url,param1){						
-			this.loading = true;
-			this.requesterror = false;
+		axiosrequest: function (url,param1){
+			/*
 			axios
 			  .get(url)
 			  .then(response => {
@@ -273,7 +273,32 @@
 					this.requesterror = true;
 					this.loading = false;
 			  }			  			  
-			);		
+			);
+			*/
+			var _self=this;
+			_self.loading = true;
+			_self.requesterror = false;
+			console.log(url);
+			$.ajax({
+				url: url,    
+				dataType: "html",
+				async: true,
+				type: "GET",   //请求方式
+				success: function(response) {
+					document.getElementById('book').innerHTML = response;
+					_self.loading = false;
+					//新章节从第一行开始展示
+					document.body.scrollTop = document.documentElement.scrollTop = 0;
+					if(param1 == 'init'){
+						//初始化时加载第一章节，此章节目录文字样式改变
+						document.getElementById('chapter1').className='selectedChapter';
+					}	
+				},
+				error: function() {
+					_self.requesterror = true;
+					_self.loading = false;		
+				}
+			});
 		},
 		/*
 		*获取鼠标选中文本，然后繁简翻译、查询佛学词典
@@ -291,6 +316,7 @@
 				return;
 			}
 			var url = 'http://glossaries.dila.edu.tw/search.json?type=match&term=' + content
+			/*
 			axios
 			.get(url)
 			.then(response => {
@@ -298,7 +324,19 @@
 						return item.dict_name_zh === "丁福保佛學大辭典";
 					});							
 			})				
-						
+			*/	
+			var _self=this;
+			$.ajax({
+				url: url,    
+				dataType: "json",
+				async: true,
+				type: "GET",
+				success: function(response) {
+					_self.explainContext = response.filter(function(item){
+						return item.dict_name_zh === "丁福保佛學大辭典";
+					});		
+				}
+			});			
 		}
 	  }
     }) 
