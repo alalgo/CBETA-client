@@ -267,8 +267,9 @@
 						var label = _self.pages[i].label;
 						var index0 = label.indexOf(' ');
 						var index1 = label.indexOf('(');
+						var index2 = label.indexOf('卷');
 						var name = label.substring(index0+1,index1);
-						var juan = label.substring(index1+1,index1+2);
+						var juan = label.substring(index1+1,index2);
 						var item = {"name":name,
 									"creators":_self.pages[i].creators,
 									"juan":juan,
