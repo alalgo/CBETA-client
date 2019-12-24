@@ -77,7 +77,7 @@
 				<a id="icons" href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>			
 				<ul>
 					<li v-for="category in filteredCategories">
-						<a name="catetoryna" :id="category.id" href="#" v-on:click="requestArticles(category.url)">{{category.name}}</a>
+						<a name="catetoryna" :id="category.id" href="#" v-on:click="requestArticles(category.volrange)">{{category.name}}</a>
 					</li>
 				</ul>
 			</div>
@@ -108,7 +108,6 @@
 	function PrefixInteger(num, length) {
 		return (Array(length).join('0') + num).slice(-length);
 	}
-	
     new Vue({
       el: '#app',
       data: {
@@ -116,32 +115,10 @@
 		filteredCategories: [],
 		pages:[],
 		filterpages:[],
-		showIntroduce:true
+		showIntroduce:true,
+		ajaxisfinish:true
 	  },
 	  mounted: function () {
-	    /*
-		const axiosInstance = axios.create({
-		  baseURL: 'http://cbdata.dila.edu.tw/v1.2/catalog_entry?q=Cat-T',
-		  timeout: 8000,
-		});			
-		axiosInstance
-			.get()
-			.then(response => {
-				this.categories = response.data.results;
-				for (i = 1; i <= this.categories.length; i++) {
-					var categorylabel = this.categories[i-1].label;
-					var InterceptName = categorylabel.substring(5);
-					var item = {"name":InterceptName.substring(0,InterceptName.indexOf('T')),
-								"url":'http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T'+PrefixInteger(i,2),
-								"id":this.categories[i-1].n.substring(6,9)
-							   }
-					this.filteredCategories.push(item);
-				 }
-			}).catch(error => {		
-				//请求超时或错误时页面提示
-			}
-		);
-		*/
 		var _self=this;
 		$.ajax({
 			url: "http://cbdata.dila.edu.tw/v1.2/catalog_entry",    //请求的url地址
@@ -158,8 +135,9 @@
 				for (i = 1; i <= _self.categories.length; i++) {
 					var categorylabel = _self.categories[i-1].label;
 					var InterceptName = categorylabel.substring(5);
+					var volrange = InterceptName.substring(InterceptName.indexOf('T')+1,InterceptName.indexOf('('))
 					var item = {"name":InterceptName.substring(0,InterceptName.indexOf('T')),
-								"url":'http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T'+PrefixInteger(i,2),
+								"volrange":volrange,
 								"id":_self.categories[i-1].n.substring(6,9)
 							   }
 					_self.filteredCategories.push(item);
@@ -174,60 +152,117 @@
 		});		
 	  },
 	  methods:{
-		requestArticles: function(url){
+		requestArticles: function(volrange){
+			//旧的请求还未结束，不接受新请求
+			if(this.ajaxisfinish){
+				this.ajaxisfinish = false;
+			}else{
+				return;
+			}
+			
 			var categoryid = window.event.target.id;
-			var categoryname = window.event.target.innerHTML;
+			var categoryname = window.event.target.innerHTML.trim();
+			if(categoryname.indexOf('[') > 0){
+				categoryname = categoryname.substring(0,categoryname.indexOf('[')).trim();
+			}
 			this.filterpages = [];
-			/*
-			const axiosInstance = axios.create({
-			  timeout: 8000,
-			});			
-			axiosInstance
-				.get(url)
-				.then(response => {
-					this.pages = response.data.results;
-					//已经显示数量的清除先					
-					var items = document.getElementsByName('catetoryna');
-					for(i=0;i<items.length;i++){
-						if(items[i].innerHTML.indexOf('[') > 0)
-							items[i].innerHTML=items[i].innerHTML.substring(0,items[i].innerHTML.indexOf('['));
-					}	
-					document.getElementById(categoryid).innerHTML = categoryname + '[' + response.data.num_found + '部]';
-					for (i = 0; i < this.pages.length; i++) {
-						var label = this.pages[i].label;
-						var index0 = label.indexOf(' ');
-						var index1 = label.indexOf('(');
-						var name = label.substring(index0+1,index1);
-						var juan = label.substring(index1+1,index1+2);
-						var item = {"name":name,
-									"creators":this.pages[i].creators,
-									"juan":juan,
-									"url":'reader.html?work=' + this.pages[i].work + '&juan=' + juan + '&bookname=' + name
-								   }
-						this.filterpages.push(item);
-					}
-					//隐藏大藏经介绍文字
-					this.showIntroduce=false;					 
-				}).catch(error => {		
-					//请求超时或错误时页面提示
+			this.pages = [];
+			var _self=this;
+			
+			//组装两类url
+			var url_all_true = [];//全部都是此部类的url
+			var url_all_false = [];//部分是此部类的url						
+			//有范围
+			if(volrange.indexOf('-') > -1){
+				//开头
+				var vol1 = volrange.substring(0,volrange.indexOf('-'));
+				if(vol1.search('a|b') > -1){
+					vol1 = vol1.substring(0,vol1.search('a|b'));
+					url_all_false.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + vol1);
+				}else{
+					url_all_true.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + vol1);
 				}
-			);
+				
+				//结尾
+				var vol2 = volrange.substring(volrange.indexOf('-') + 1,volrange.length);
+				if(vol2.search('a|b') > -1){
+					vol2 = vol2.substring(0,vol2.search('a|b'));
+					url_all_false.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + vol2);
+				}else{
+					url_all_true.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + vol2);
+				}
+				
+				//中间
+				if(parseInt(vol2) - parseInt(vol1) > 1){
+					for(i = parseInt(vol1)+1; i < parseInt(vol2); i++){
+						url_all_true.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + PrefixInteger(i,2));
+					}
+				}
+			}else{//无范围
+				if(volrange.search('a|b') > -1){
+					url_all_false.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + volrange.substring(0,volrange.search('a|b')));
+				}else{
+					url_all_true.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + volrange);
+				}			
+			}
+			
+			//console.log(categoryname);
+			//请求
+			if(url_all_true.length >0){
+				//console.log("url_all_true");
+				for(j = 0; j<url_all_true.length; j++){
+					//console.log(url_all_true[j])
+					this.jqueryajax(url_all_true[j],true,categoryname);
+				}
+			}
+			if(url_all_false.length >0){
+				//console.log("url_all_false");
+				for(k = 0; k<url_all_false.length; k++){
+					//console.log(url_all_false[k])
+					this.jqueryajax(url_all_false[k],false,categoryname);
+				}
+			}
+			
+			//其它请求此方法可以进来了
+			_self.ajaxisfinish = true;
+			//隐藏大藏经介绍文字
+			_self.showIntroduce=false;
+			/*
+			//已经显示数量的清除先					
+			var items = document.getElementsByName('catetoryna');			
+			for(i=0;i<items.length;i++){
+				if(items[i].innerHTML.indexOf('[') > 0)
+					items[i].innerHTML=items[i].innerHTML.substring(0,items[i].innerHTML.indexOf('['));
+			}
+			
+			setTimeout(function(){
+				document.getElementById(categoryid).innerHTML = categoryname + '[' + _self.filterpages.length + '部]';
+			},2000);
 			*/
+		},
+		/*
+		url- 请求地址 ； url_all- 是全部还是部分 true、false ； categoryname- 部类名
+		*/
+		jqueryajax: function(url,url_all,categoryname){
 			var _self=this;
 			$.ajax({
 				url: url,    
 				dataType: "json",
 				async: true,
 				type: "GET",   //请求方式
-				success: function(response) {
-					_self.pages = response.results;
-					//已经显示数量的清除先					
-					var items = document.getElementsByName('catetoryna');
-					for(i=0;i<items.length;i++){
-						if(items[i].innerHTML.indexOf('[') > 0)
-							items[i].innerHTML=items[i].innerHTML.substring(0,items[i].innerHTML.indexOf('['));
-					}	
-					document.getElementById(categoryid).innerHTML = categoryname + '[' + response.num_found + '部]';
+				success: function(resp) {
+					//部分的话需要筛选哪些属于此部类
+					if(url_all){
+						_self.pages = resp.results;
+					}else{
+						for (i = 0; i < resp.num_found; i++) {
+							if(resp.results[i].category.includes(categoryname)){
+								_self.pages.push(resp.results[i]);
+							}
+						}
+					}
+					
+					//过滤，获取页面需要的信息
 					for (i = 0; i < _self.pages.length; i++) {
 						var label = _self.pages[i].label;
 						var index0 = label.indexOf(' ');
@@ -241,8 +276,9 @@
 								   }
 						_self.filterpages.push(item);
 					}
-					//隐藏大藏经介绍文字
-					_self.showIntroduce=false;	
+				},
+				error: function() {
+				
 				}
 			});
 		},
