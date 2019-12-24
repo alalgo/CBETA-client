@@ -7,7 +7,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script src="./resources/js/element-index-2.13.0.js"></script>  
 	<!--<script src="./resources/js/axios.min.js"></script>-->
-	<script src="./resources/js/jquery-3.4.1.min.js"></script>	
+	<script src="./resources/js/jquery-3.4.1.min.js"></script>
+	<script src="./resources/js/myutils.js"></script>
 	<style>
 	  .el-row {
 		margin-bottom: 20px;
@@ -104,10 +105,6 @@
   </div>
   </body>
   <script>
-  	//length位数字，不足的前面补0
-	function PrefixInteger(num, length) {
-		return (Array(length).join('0') + num).slice(-length);
-	}
     new Vue({
       el: '#app',
       data: {
@@ -195,7 +192,7 @@
 				//中间
 				if(parseInt(vol2) - parseInt(vol1) > 1){
 					for(i = parseInt(vol1)+1; i < parseInt(vol2); i++){
-						url_all_true.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + PrefixInteger(i,2));
+						url_all_true.push('http://cbdata.dila.edu.tw/v1.2/catalog_entry?vol=T' + util.PrefixInteger(i,2));
 					}
 				}
 			}else{//无范围
@@ -211,7 +208,7 @@
 			if(url_all_true.length >0){
 				//console.log("url_all_true");
 				for(j = 0; j<url_all_true.length; j++){
-					//console.log(url_all_true[j])
+					console.log(url_all_true[j])
 					this.jqueryajax(url_all_true[j],true,categoryname);
 				}
 			}
@@ -227,18 +224,18 @@
 			_self.ajaxisfinish = true;
 			//隐藏大藏经介绍文字
 			_self.showIntroduce=false;
-			/*
+			
 			//已经显示数量的清除先					
 			var items = document.getElementsByName('catetoryna');			
 			for(i=0;i<items.length;i++){
 				if(items[i].innerHTML.indexOf('[') > 0)
 					items[i].innerHTML=items[i].innerHTML.substring(0,items[i].innerHTML.indexOf('['));
 			}
-			
+			//使用jquery方法延时2秒钟显示数量（因为多个ajax请求，需等其请求结束后再显示数量）
 			setTimeout(function(){
 				document.getElementById(categoryid).innerHTML = categoryname + '[' + _self.filterpages.length + '部]';
-			},2000);
-			*/
+			},3000);
+			
 		},
 		/*
 		url- 请求地址 ； url_all- 是全部还是部分 true、false ； categoryname- 部类名

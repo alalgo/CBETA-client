@@ -8,6 +8,7 @@
     <script src="./resources/js/element-index-2.13.0.js"></script> 
     <!--<script src="./resources/js/axios.min.js"></script> -->
 	<script src="./resources/js/jquery-3.4.1.min.js"></script>
+	<script src="./resources/js/myutils.js"></script>	
 	<script src="./resources/js/FontsLib.js"></script>
     <script src="./resources/js/TraditionToSimple_CN.js"></script>		
 	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />
@@ -75,7 +76,9 @@
 	  	margin-left:-27px;
 	  }
 	  #translate{
-		font-family:Cursive; font-size:114%; color:#868181;
+		font-family:Cursive; 
+		font-size:114%; 
+		color:#868181;
 	  }
 	  #failmsg {
 		margin-top:67px;
@@ -161,13 +164,11 @@
 			<div class="tools">
 				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>
 				<!--&nbsp &nbsp				
-				<a title='繁简翻译'>繁/简</a>	-->
+				<a title='繁简翻译'>繁/简</a>-->
 			</div>
 			<div id='translate'>
 				<el-scrollbar 	
 					wrap-class="list2" 
-					wrap-style="color: #868181;font-family:Cursive;" 
-					view-style="" 
 					view-class="view-box1" 
 					:native="false">
 					<div>{{simpleChineseContext}}</div>
@@ -183,20 +184,7 @@
 	</el-row>	
   </div>
   </body>
-  <script>
-    //获取 request params值
-	function getQueryStr(name) { 
-	  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
-	  var r = window.location.search.substr(1).match(reg); 
-	  if (r != null)  
-		return decodeURI(r[2]); 
-	  return null; 
-	} 
-	//length位数字，不足的前面补0
-	function PrefixInteger(num, length) {
-		return (Array(length).join('0') + num).slice(-length);
-	}
-		
+  <script>	
     new Vue({
       el: '#app',
       data: {
@@ -220,12 +208,12 @@
 		bookname:''
 	  },
 	  mounted: function () {
-	    var work = getQueryStr("work");
-		var juan = getQueryStr("juan");
-		this.bookname = getQueryStr("bookname");
+	    var work = util.getQueryStr("work");
+		var juan = util.getQueryStr("juan");
+		this.bookname = util.getQueryStr("bookname");
 		for (i = 1; i <=juan; i++) { 
 			this.contents.push({name:'卷'+i , 
-								url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + PrefixInteger(i,3) + '.html',
+								url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + util.PrefixInteger(i,3) + '.html',
 								id: 'chapter'+i
 							});
 		}
@@ -257,28 +245,9 @@
 			this.axiosrequest(url);
 		},
 		axiosrequest: function (url,param1){
-			/*
-			axios
-			  .get(url)
-			  .then(response => {
-					document.getElementById('book').innerHTML = response.data;
-					this.loading = false;
-					//新章节从第一行开始展示
-					document.body.scrollTop = document.documentElement.scrollTop = 0;
-					if(param1 == 'init'){
-						//初始化时加载第一章节，此章节目录文字样式改变
-						document.getElementById('chapter1').className='selectedChapter';
-					}
-			  }).catch(error => {
-					this.requesterror = true;
-					this.loading = false;
-			  }			  			  
-			);
-			*/
 			var _self=this;
 			_self.loading = true;
 			_self.requesterror = false;
-			console.log(url);
 			$.ajax({
 				url: url,    
 				dataType: "html",
@@ -316,15 +285,6 @@
 				return;
 			}
 			var url = 'http://glossaries.dila.edu.tw/search.json?type=match&term=' + content
-			/*
-			axios
-			.get(url)
-			.then(response => {
-					this.explainContext = response.data.filter(function(item){
-						return item.dict_name_zh === "丁福保佛學大辭典";
-					});							
-			})				
-			*/	
 			var _self=this;
 			$.ajax({
 				url: url,    

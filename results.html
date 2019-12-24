@@ -8,6 +8,7 @@
     <script src="./resources/js/element-index-2.13.0.js"></script>  
     <!--<script src="./resources/js/axios.min.js"></script> -->
 	<script src="./resources/js/jquery-3.4.1.min.js"></script>
+	<script src="./resources/js/myutils.js"></script>	
 	<script src="./resources/js/FontsLib.js"></script>
     <script src="./resources/js/TraditionToSimple_CN.js"></script>	  	
 	<link rel="shortcut icon" href="./resources/images/fojing256px.ico" type="image/x-icon" />	
@@ -130,53 +131,7 @@
   </div>
   </body>
   
-  <script>
-	/*
-	*将URL中的UTF-8字符串转成中文字符串  
-	*/
-	function getCharFromUtf8(str) {  
-		var cstr = "";  
-		var nOffset = 0;  
-		if (str == "")  
-		return "";  
-			str = str.toLowerCase();  
-			nOffset = str.indexOf("%e");  
-		if (nOffset == -1)  
-		return str;  
-		while (nOffset != -1) {  
-				cstr += str.substr(0, nOffset);  
-				str = str.substr(nOffset, str.length - nOffset);  
-		if (str == "" || str.length < 9)  
-		return cstr;  
-				cstr += utf8ToChar(str.substr(0, 9));  
-				str = str.substr(9, str.length - 9);  
-				nOffset = str.indexOf("%e");  
-			}  
-		return cstr + str;  
-	} 
-
-	/*
-	*将编码转换成字符  
-	*/
-	function utf8ToChar(str) {  
-		var iCode, iCode1, iCode2;  
-			iCode = parseInt("0x" + str.substr(1, 2));  
-			iCode1 = parseInt("0x" + str.substr(4, 2));  
-			iCode2 = parseInt("0x" + str.substr(7, 2));  
-		return String.fromCharCode(((iCode & 0x0F) << 12) | ((iCode1 & 0x3F) << 6) | (iCode2 & 0x3F));  
-	}  
-	
-    /*
-	*获取 request params值
-	*/
-	function getQueryStr(name) { 
-	  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
-	  var r = window.location.search.substr(1).match(reg); 
-	  if (r != null)  
-		return decodeURI(r[2]); 
-	  return null; 
-	}  	
-	  
+  <script> 		  
     new Vue({
       el: '#app',
       data: {
@@ -191,9 +146,9 @@
 	  },		  
 	  mounted: function() {
 		//将首页搜索内容放入搜索结果页面中的搜索输入框中，以便后续搜索
-		this.inputv = getQueryStr("name");
+		this.inputv = util.getQueryStr("name");
 	    //从首页搜索跳转过来时进行的搜索，请求接口搜索
-		this.axiosRequest(getQueryStr("name"));
+		this.axiosRequest(util.getQueryStr("name"));
 	  },
 	  methods: {
 	    /*
@@ -242,30 +197,7 @@
 			this.loading = true;	
 			//请求接口搜索
 			this.requesterror = false;
-			/*
-			const axiosInstance = axios.create({
-			  baseURL: 'https://cbdata.dila.edu.tw/v1.2',
-			  timeout: 8000,
-			});			
-			axiosInstance
-			    .get('toc?q='+context)
-			    .then(response => {
-			  		this.results = response.data.results;
-			  		//过滤搜索结果，只保存经文结果
-			  		this.filterResult = this.results.filter(function(item){
-			  			return item.type === "work";
-			  		});	
-			  		//搜索结束后立即分页
-			  		this.handleCurrentChange(1);
-			  		//搜索结束后关掉在加载中
-			  		this.loading = false;			
-			    }).catch(error => {		
-					//请求超时或错误时页面提示
-					this.loading = false;
-					this.requesterror = true;
-			    }
-			);
-			*/
+
 			var _self=this;
 			$.ajax({
 				url: "https://cbdata.dila.edu.tw/v1.2/toc",
