@@ -1,2 +1,0 @@
-(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d0e5c01"],{"968f":function(e,n,t){"use strict";t.r(n);var r=function(){var e=this,n=e.$createElement,t=e._self._c||n;return t("div",[e._v(" 读经页面 "+e._s(this.$route.params.title)+" ")])},a=[],s={name:"reader"},u=s,c=t("2877"),l=Object(c["a"])(u,r,a,!1,null,null,null);n["default"]=l.exports}}]);
-//# sourceMappingURL=chunk-2d0e5c01.644ebaec.js.map
