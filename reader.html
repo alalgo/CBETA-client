@@ -41,6 +41,7 @@
 	  .tools{
 		margin-left:246px;
 		margin-bottom:24px;
+		font-size:20px;
 	  }
 	  .left{
 		position:fixed;
@@ -160,8 +161,11 @@
 	  </el-col>
 	  <!-- 右侧区域 发送kindle + 翻译 + 改变字体大小 -->
 	  <el-col :span="4"  :offset="1">
-		<div class='explainContextclass'>
+		<div class='explainContextclass'>		
 			<div class="tools">
+				<a title='收藏' v-if="staron" v-on:click="favoriteBook"><i class="el-icon-star-on"></i></a>
+				<a title='收藏' v-else v-on:click="favoriteBook"><i class="el-icon-star-off"></i></a>
+				&nbsp &nbsp	
 				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>
 				<!--&nbsp &nbsp				
 				<a title='繁简翻译'>繁/简</a>-->
@@ -205,10 +209,12 @@
 		loading:false,
 		simpleChineseContext:'',
 		requesterror:false,
-		bookname:''
+		bookname:'',
+		staron: false //是否已经收藏
 	  },
 	  mounted: function () {
 	    var work = util.getQueryStr("work");
+		console.log(work)
 		var juan = util.getQueryStr("juan");
 		this.bookname = util.getQueryStr("bookname");
 		for (i = 1; i <=juan; i++) { 
@@ -297,6 +303,23 @@
 					});		
 				}
 			});			
+		},
+		favoriteBook: function (){
+			if (this.staron){
+				this.$notify({
+				  message: "取消收藏成功",
+				  position: "top-left",
+				  duration: 2000
+				});	
+				this.staron = false				
+			}else{
+				this.$notify({
+				  message: "收藏成功",
+				  position: "top-left",
+				  duration: 2000
+				});	
+				this.staron = true
+			}
 		}
 	  }
     }) 

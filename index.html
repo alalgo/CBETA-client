@@ -7,6 +7,7 @@
 	<script src="./resources/js/element-index-2.13.0.js"></script>  	
 	<script src="./resources/js/FontsLib.js"></script>
     <script src="./resources/js/TraditionToSimple_CN.js"></script>	
+	<script src="./resources/js/jquery-3.4.1.min.js"></script>
 	<style>
 	  .el-row {
 		margin-bottom: 20px;
@@ -20,6 +21,9 @@
 	  .grid-content {
 		border-radius: 4px;
 		min-height: 36px;
+	  }
+	  .login{
+		margin-top:-12px;
 	  }
 	  .icons {
 		margin-left:-60px;
@@ -42,7 +46,33 @@
   <body>
   <div id="app">
 	<el-row>
-	  <el-col :span="1" :offset="22">
+		<el-col :span="1" :offset="21">
+		  
+			  <div class="grid-content login">
+				<a  >
+					<el-button type="text" @click="loginorhome">
+						<img v-if="islogin" title="主页" src="./resources/images/home.png" alt="picture" width="30px" height="30px" />
+						<img v-else title="登陆" src="./resources/images/login.png" alt="picture" width="30px" height="30px" />
+					</el-button>
+				</a>
+			  </div>
+		  		  
+		  <el-dialog :visible.sync="dialogFormVisible" width="400px" :show-close=false >
+		    <el-form :model="form">
+		  	<el-form-item label="用户名" :label-width="formLabelWidth">
+		  	  <el-input v-model="form.username" autocomplete="off"></el-input>
+		  	</el-form-item>
+		  	<el-form-item label="密码" :label-width="formLabelWidth">
+		  	  <el-input v-model="form.password" autocomplete="off" show-password></el-input>
+		  	</el-form-item>
+		    </el-form>
+		    <div slot="footer" class="dialog-footer">
+				<el-button @click="login">登陆</el-button>
+				<el-button @click="regist">注册</el-button>
+		    </div>
+		  </el-dialog>		  
+	   </el-col>	
+	  <el-col :span="1" >
 		  <div class="grid-content">
 			<a href="./bookshelf.html" title='书架'>
 				<img src="./resources/images/bookshelf.png" alt="picture" width="30px" height="30px" />
@@ -95,13 +125,64 @@
     new Vue({
       el: '#app',
       data: {
-		inputvalue: ''		
+		inputvalue: '',
+        dialogFormVisible: false,
+        form: {
+          username: '',
+          password: ''
+        },
+        formLabelWidth: '60px',
+		islogin: false
 	  },	  
 	  methods: {
 		submitsear: function () {
 			var t2s = new TraditionToSimple_CN(); 
 			var tradtion_input = t2s.toTraditionalized(this.inputvalue);
 			window.location.href = 'results.html?name='+tradtion_input;
+		},
+		loginorhome: function() {
+			if(this.islogin){//跳到主页
+				window.location.href = 'home.html';					
+			}else{//出现登陆、注册页面
+				this.dialogFormVisible = true
+			}
+		},
+		login: function(){
+			this.dialogFormVisible = false
+			this.islogin = true
+			this.$notify({
+			  message: "登陆成功",
+			  position: "top-left",
+			  duration: 2000
+			});				
+		},
+		regist: function(){
+			console.log('regist...'+this.form.username+'--'+this.form.password)
+			var _self=this;
+			$.ajax({
+				url: "http://localhost:80/api/v1/user/add",    
+				dataType: "json",
+				async: true,
+				type: "POST",
+				contentType: "application/json",
+				data:JSON.stringify({username:this.form.username,password:this.form.password}),
+				success: function(response) {
+					console.log(response)
+					console.log(response.code)
+					if(response.code == 200){					
+						_self.dialogFormVisible = false
+					}
+					_self.$notify({
+					  message: response.message,
+					  position: "top-left",
+					  duration: 3500
+					});	
+					_self.islogin = true
+				},                 
+				error: function(xhr) {
+                   console.log('error:' + JSON.stringify(xhr));
+                }
+			});				
 		}
 	  }	  
     }) 

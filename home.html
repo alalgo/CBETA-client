@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>我的</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="./resources/js/element-index-2.13.0.js"></script> 
+	<link rel="shortcut icon" href="./resources/images/fojing.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
+	<style>
+	  .icon {
+		margin-top:12px;
+		margin-left:46px;
+	  }
+	</style>
+  </head>
+  <body>
+  <div id="app">
+	<el-row class="tac">
+	  <el-col :span="3">
+		<div class="icon">
+			<a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>
+		</div>
+		<el-menu
+		  default-active="1"
+		  class="el-menu-vertical-demo"
+		  @select="handleSelect"
+		>
+		  <el-menu-item index="1">
+			<span slot="title">佛经</span>
+		  </el-menu-item>
+		  <el-menu-item index="2">
+			<span slot="title">账号</span>
+		  </el-menu-item>
+		  <el-menu-item index="3">
+			<span slot="title">退出登陆</span>
+		  </el-menu-item>
+		</el-menu>
+	  </el-col>
+	  <el-col :span="21" v-if="menuIndex == 1">
+		佛经
+	  </el-col>
+	  <el-col :span="21" v-if="menuIndex == 2">
+		账号
+	  </el-col>
+	  <el-col :span="21" v-if="menuIndex == 3">
+		退出登陆
+	  </el-col>
+	</el-row>
+  </div>
+  </body>
+  <script>
+	new Vue({
+      el: '#app',
+      data: {
+		menuIndex:1,
+	  },
+	  methods: {
+		  handleSelect(key, keyPath) {
+			this.menuIndex = key
+		  }
+	  }
+	})
+  </script>
+</html>
