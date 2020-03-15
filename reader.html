@@ -36,10 +36,10 @@
 	  }
 	  .explainContextclass {
 		position:fixed;
-		top:14px;
+		top:30px;
 	  }
 	  .tools{
-		margin-left:246px;
+		margin-left:155px;
 		margin-bottom:24px;
 		font-size:20px;
 	  }
@@ -90,7 +90,7 @@
 	  	  /* Positioning */
 	  	  position: fixed;
 	  	  left: 0;
-	  	  top: 0;
+	  	  top: 22px;
 	  	  z-index: 1000;
 	  	  width: 100%;
 	  	  height: 2px;
@@ -149,7 +149,7 @@
 				view-class="view-box" 
 				:native="false">
 				<ul>
-					<li v-for="content in contents"><a name="chapterlink" :id="content.id"  v-on:click="selectchapter(content.url)">{{content.name}}</a></li>
+					<li v-for="content in contents"><a name="chapterlink" :id="content.id"  v-on:click="selectchapter(content.chapterNo)">{{content.name}}</a></li>
 				</ul>
 			</el-scrollbar>
 		  </div>		  
@@ -163,12 +163,14 @@
 	  <el-col :span="4"  :offset="1">
 		<div class='explainContextclass'>		
 			<div class="tools">
-				<a title='收藏' v-if="staron" v-on:click="favoriteBook"><i class="el-icon-star-on"></i></a>
+				<a title='取消收藏' v-if="staron" v-on:click="favoriteBook"><i class="el-icon-star-on"></i></a>
 				<a title='收藏' v-else v-on:click="favoriteBook"><i class="el-icon-star-off"></i></a>
+				&nbsp &nbsp				
+				<a title='繁简翻译' v-on:click="tstranslate"><image src="./resources/images/ts.png" alt="picture" width="17px" height="17px"/></a>
+				&nbsp &nbsp	
+				<a title='下载' id="downloadid" v-on:click="download"><i class="el-icon-download"></i></a>
 				&nbsp &nbsp	
 				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>
-				<!--&nbsp &nbsp				
-				<a title='繁简翻译'>繁/简</a>-->
 			</div>
 			<div id='translate'>
 				<el-scrollbar 	
@@ -210,36 +212,60 @@
 		simpleChineseContext:'',
 		requesterror:false,
 		bookname:'',
-		staron: false //是否已经收藏
+		bookwork:'',
+		bookchapters:'',
+		staron: false,//是否已经收藏
+		currentChapterNo:1, //当前阅读的章节号
+		currentLanguage:'tradition' //当前经文语言，初始化默认为繁体 ，简体为 simple
 	  },
 	  mounted: function () {
 	    var work = util.getQueryStr("work");
-		console.log(work)
+		this.bookwork = work;
 		var juan = util.getQueryStr("juan");
+		this.bookchapters = juan;
 		this.bookname = util.getQueryStr("bookname");
 		for (i = 1; i <=juan; i++) { 
 			this.contents.push({name:'卷'+i , 
-								url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + util.PrefixInteger(i,3) + '.html',
+								//url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + util.PrefixInteger(i,3) + '.html',
+								chapterNo:i,
 								id: 'chapter'+i
 							});
 		}
-		this.axiosrequest('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html','init');
+		//this.axiosrequest('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html','init');
+		this.getbookcontent(1,'init');
 		//阅读进度条
 		document.addEventListener('DOMContentLoaded', function () {
 			  var winHeight = window.innerHeight,
-					docHeight = document.documentElement.scrollHeight,
-					progressBar = document.querySelector('#content_progress');
+				  docHeight = document.documentElement.scrollHeight,
+				  progressBar = document.querySelector('#content_progress');
 			  progressBar.max = docHeight - winHeight;
 			  progressBar.value = window.scrollY;
 
 			  document.addEventListener('scroll', function () {
-					progressBar.max = document.documentElement.scrollHeight - window.innerHeight;
-					progressBar.value = window.scrollY;
+				progressBar.max = document.documentElement.scrollHeight - window.innerHeight;
+				progressBar.value = window.scrollY;
 			  });
-		});		
+		});
+		//判断收藏与否
+		var _self=this;
+		var cbetaworks = sessionStorage.getItem("cbetaworks");
+		if(cbetaworks == null){
+			this.getFavoriteBook();
+		}
+		cbetaworks = sessionStorage.getItem("cbetaworks");
+		//sessionStorage中不能存数组只能存字符串，随意数组按字符串存入后取出来需要转为数组
+		if(cbetaworks != null){
+			cbetaworks = cbetaworks.split(',')		
+			for(j = 0; j < cbetaworks.length; j++){
+				if(cbetaworks[j] == this.bookwork){
+					this.staron = true;
+					break;
+				}
+			}
+		}
 	  },	 
 	  methods: {
-		selectchapter: function(url){
+		selectchapter: function(chapterNo){
 			//选择章节后，此章节目录文字样式改变（先清空之前样式）
 			var items = document.getElementsByName('chapterlink');
 			for(i=0;i<items.length;i++){
@@ -247,9 +273,62 @@
 			}
 			var chapterid = window.event.target.id;
 			document.getElementById(chapterid).className = 'selectedChapter';
-			
-			this.axiosrequest(url);
+			this.currentChapterNo = chapterNo;
+			//this.axiosrequest(url);
+			this.getbookcontent(chapterNo);
 		},
+		getbookcontent: function (chapterNo,param1,language){
+			var _self=this;
+			_self.loading = true;
+			_self.requesterror = false;
+			$.ajax({
+				url: "https://alalgo.top/bookapi/api/v1/book/readBook",    
+				dataType: "json",
+				async: true,
+				type: "GET",   //请求方式
+				//headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
+				data:{"BookName":_self.bookname,
+					  "Chapters":_self.bookchapters,
+					  "Work":_self.bookwork,
+					  "ChapterNo":chapterNo,
+					  "Language":language 
+					  },
+				success: function(response) {
+					document.getElementById('book').innerHTML = "";				
+					document.getElementById('book').innerHTML = response.data;
+					_self.loading = false;
+					if(param1 == 'init'){
+						//初始化时加载第一章节，此章节目录文字样式改变
+						document.getElementById('chapter1').className='selectedChapter';
+					}
+					//成功后更新当前繁简状态
+					if(language == "simple"){
+						_self.currentLanguage = "simple"
+						_self.$notify({
+						  message: "繁体转简体成功",
+						  position: "top-left",
+						  duration: 2000
+						});	
+					}else if(language == "tradition"){
+						_self.currentLanguage = "tradition"
+						_self.$notify({
+						  message: "简体转繁体成功",
+						  position: "top-left",
+						  duration: 2000
+						});							
+					}else{
+						//非翻译的新章节从第一行开始展示
+						document.body.scrollTop = document.documentElement.scrollTop = 0;
+					}					
+				},
+				error: function() {
+					document.getElementById('book').innerHTML = "";
+					_self.requesterror = true;
+					_self.loading = false;		
+				}
+			});
+		},
+		/*
 		axiosrequest: function (url,param1){
 			var _self=this;
 			_self.loading = true;
@@ -275,6 +354,8 @@
 				}
 			});
 		},
+		*/
+		
 		/*
 		*获取鼠标选中文本，然后繁简翻译、查询佛学词典
 		*/
@@ -304,21 +385,140 @@
 				}
 			});			
 		},
-		favoriteBook: function (){
-			if (this.staron){
-				this.$notify({
-				  message: "取消收藏成功",
-				  position: "top-left",
-				  duration: 2000
-				});	
-				this.staron = false				
+		getFavoriteBook: function (){
+			$.ajax({
+				url: "https://alalgo.top/bookapi/api/v1/user/getFavoritedBooks",    
+				dataType: "json",
+				async: false,
+				type: "get",
+				contentType: "application/json",
+				headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
+				data:{"username":sessionStorage.getItem("cbetausername")},
+				success: function(response) {
+					if(response.code == 200){
+						var works = [];
+						if(response.data == null){
+							sessionStorage.removeItem("cbetaworks");
+						}else{
+							for(i=0;i<response.data.length;i++){
+								works.push(response.data[i].Work);
+							}
+							sessionStorage.setItem("cbetaworks",works); 
+						}
+					}
+				},                 
+				error: function(xhr) {
+				   console.log('error:' + JSON.stringify(xhr));
+				}
+			});
+		},
+		//下载pdf不预览直接下载，只能使用XMLHttpRequest方案
+		download: function(){
+			var url = "http://cbdata.dila.edu.tw/v1.2/download/pdf/"+this.bookwork.substr(0, 1)+"/"+this.bookwork+".pdf";
+			console.log("downloadurl:"+url)
+		    var req = new XMLHttpRequest();
+		    req.open("GET", url, true);
+		    req.responseType = "blob";
+			var _self = this;
+		    req.onload = function (event) {
+				var blob = req.response;
+				var link=document.createElement('a');
+				link.href=window.URL.createObjectURL(blob);
+				link.download = _self.bookname+'.pdf';
+				link.click();
+		    };          
+		    req.send();
+		},
+		tstranslate: function(){ 
+			if(this.currentLanguage == "tradition"){
+				this.getbookcontent(this.currentChapterNo,null,"simple");					
 			}else{
+				this.getbookcontent(this.currentChapterNo,null,"tradition");
+			}			
+		},
+		favoriteBook: function (){
+			if(sessionStorage.getItem("cbetatoken") == null){
 				this.$notify({
-				  message: "收藏成功",
+				  message: "请登陆",
 				  position: "top-left",
 				  duration: 2000
 				});	
-				this.staron = true
+				return;
+			}
+			if (this.staron){
+				var _self=this;
+				$.ajax({
+					url: "https://alalgo.top/bookapi/api/v1/user/unFavorite",    
+					dataType: "json",
+					async: true,
+					type: "get",
+					contentType: "application/json",
+					headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
+					data:{"Username":sessionStorage.getItem("cbetausername"),"BookWork":_self.bookwork},
+					success: function(response) {
+						console.log(response)
+						if(response.code == 200){	
+							_self.$notify({
+							  message: "取消收藏成功",
+							  position: "top-left",
+							  duration: 2000
+							});	
+							_self.staron = false;
+							_self.getFavoriteBook();
+						}else{
+							_self.$notify({
+							  message: response.message,
+							  position: "top-left",
+							  duration: 2000
+							});				
+						}
+					},                 
+					error: function(xhr) {
+						_self.$notify({
+						  message: JSON.stringify(xhr),
+						  position: "top-left",
+						  duration: 2000
+						});						   
+					}
+					
+				});						
+			}else{
+				var _self=this;
+				$.ajax({
+					url: "https://alalgo.top/bookapi/api/v1/user/favorite",    
+					dataType: "json",
+					async: true,
+					type: "get",
+					contentType: "application/json",
+					headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
+					data:{"Username":sessionStorage.getItem("cbetausername"),"BookWork":_self.bookwork},
+					success: function(response) {
+						console.log(response)
+						if(response.code == 200){	
+							_self.$notify({
+							  message: "收藏成功",
+							  position: "top-left",
+							  duration: 2000
+							});	
+							_self.staron = true;
+							_self.getFavoriteBook();
+						}else{
+							_self.$notify({
+							  message: response.message,
+							  position: "top-left",
+							  duration: 2000
+							});				
+						}
+					},                 
+					error: function(xhr) {
+						_self.$notify({
+						  message: JSON.stringify(xhr),
+						  position: "top-left",
+						  duration: 2000
+						});						   
+					}
+					
+				});
 			}
 		}
 	  }

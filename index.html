@@ -78,7 +78,7 @@
 				<img src="./resources/images/bookshelf.png" alt="picture" width="30px" height="30px" />
 			</a>
 		  </div>
-	   </el-col>	
+	   </el-col>	   
 	  <!--<el-col :span="1" ><div class="grid-content">繁/简</div></el-col>-->
 	  <el-col :span="1" >
 		  <div class="grid-content">
@@ -133,6 +133,12 @@
         },
         formLabelWidth: '60px',
 		islogin: false
+	  },	
+	  mounted: function() {
+		var token = sessionStorage.getItem("cbetatoken");
+		if( token != '' && token != null){
+			this.islogin = true
+		}
 	  },	  
 	  methods: {
 		submitsear: function () {
@@ -149,35 +155,65 @@
 		},
 		login: function(){
 			this.dialogFormVisible = false
-			this.islogin = true
-			this.$notify({
-			  message: "登陆成功",
-			  position: "top-left",
-			  duration: 2000
-			});				
-		},
-		regist: function(){
-			console.log('regist...'+this.form.username+'--'+this.form.password)
+
 			var _self=this;
 			$.ajax({
-				url: "http://localhost:80/api/v1/user/add",    
+				url: "https://alalgo.top/bookapi/api/v1/user/login",    
+				dataType: "json",
+				async: true,
+				type: "get",
+				contentType: "application/json",
+				data:{"username":_self.form.username,"password":_self.form.password},
+				success: function(response) {
+					console.log(response)
+					if(response.code == 200){					
+						_self.$notify({
+						  message: "登陆成功",
+						  position: "top-left",
+						  duration: 2000
+						});	
+						sessionStorage.setItem("cbetatoken",response.data); 
+						sessionStorage.setItem("cbetausername",_self.form.username);  
+						_self.islogin = true
+					}else{
+						_self.$notify({
+						  message: response.message,
+						  position: "top-left",
+						  duration: 3500
+						});	
+					}
+				},                 
+				error: function(xhr) {
+                   console.log('error:' + JSON.stringify(xhr));
+                }
+			});					
+		},
+		regist: function(){
+			var _self=this;
+			$.ajax({
+				url: "https://alalgo.top/bookapi/api/v1/user/add",    
 				dataType: "json",
 				async: true,
 				type: "POST",
 				contentType: "application/json",
-				data:JSON.stringify({username:this.form.username,password:this.form.password}),
+				data:JSON.stringify({username:_self.form.username,password:_self.form.password}),
 				success: function(response) {
-					console.log(response)
-					console.log(response.code)
 					if(response.code == 200){					
 						_self.dialogFormVisible = false
+						_self.$notify({
+						  message: "注册成功",
+						  position: "top-left",
+						  duration: 2000
+						});	
+						//登陆
+						_self.login()
+					}else{
+						_self.$notify({
+						  message: response.message,
+						  position: "top-left",
+						  duration: 3500
+						});	
 					}
-					_self.$notify({
-					  message: response.message,
-					  position: "top-left",
-					  duration: 3500
-					});	
-					_self.islogin = true
 				},                 
 				error: function(xhr) {
                    console.log('error:' + JSON.stringify(xhr));

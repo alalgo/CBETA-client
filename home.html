@@ -7,10 +7,28 @@
 	<script src="./resources/js/element-index-2.13.0.js"></script> 
 	<link rel="shortcut icon" href="./resources/images/fojing.ico" type="image/x-icon" />
 	<link rel="stylesheet" href="./resources/css/element-index-2.13.0.css">
+	<script src="./resources/js/jquery-3.4.1.min.js"></script>
 	<style>
 	  .icon {
 		margin-top:12px;
 		margin-left:46px;
+	  }
+	  .book {
+		cursor:pointer;
+		margin-top:20px;
+		margin-left:20px;
+		border:1px dashed #000;
+		float: left;
+		text-align:center;
+		height:72px;
+		margin:6px 13px; /*上下、左右外边距*/
+		padding:4px 13px; /*上下、左右内边距*/
+	  }
+	  .bookname {
+		font-size:20px;
+		margin-bottom:-22px;
+		margin-top:1px;
+		letter-spacing:1px;
 	  }
 	</style>
   </head>
@@ -38,7 +56,10 @@
 		</el-menu>
 	  </el-col>
 	  <el-col :span="21" v-if="menuIndex == 1">
-		佛经
+		<div  class="book" v-for="page in mybooks" v-on:click='readbook(page.url)'>
+			<h5 class = "bookname">{{page.BookName}}</h5> 
+			<br/><span>{{page.Chapters}}卷</span>				
+		</div>
 	  </el-col>
 	  <el-col :span="21" v-if="menuIndex == 2">
 		账号
@@ -54,11 +75,53 @@
       el: '#app',
       data: {
 		menuIndex:1,
+		mybooks:[]
+	  },
+	  mounted: function(){
+		var _self=this;
+		$.ajax({
+			url: "https://alalgo.top/bookapi/api/v1/user/getFavoritedBooks",    
+			dataType: "json",
+			async: true,
+			type: "get",
+			contentType: "application/json",
+			headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
+			data:{"username":sessionStorage.getItem("cbetausername")},
+			success: function(response) {
+				//console.log(response)
+				if(response.code == 200){
+					for(i=0;i<response.data.length;i++){
+						_self.mybooks.push({
+							"BookName":response.data[i].BookName,
+							"Chapters":response.data[i].Chapters,
+							"url":'reader.html?work=' + response.data[i].Work + '&juan=' + response.data[i].Chapters + '&bookname=' + response.data[i].BookName
+						});
+					}
+					//console.log(_self.mybooks)
+					//_self.mybooks = response.data;
+				}else{
+
+				}
+			},                 
+			error: function(xhr) {
+			   console.log('error:' + JSON.stringify(xhr));
+			}
+		});
 	  },
 	  methods: {
 		  handleSelect(key, keyPath) {
 			this.menuIndex = key
-		  }
+			//退出登陆
+			if(key == 3){
+				sessionStorage.removeItem("cbetatoken");
+				sessionStorage.removeItem("cbetausername");
+				sessionStorage.removeItem("cbetaworks");
+				window.location.href = 'index.html';				
+			}
+		  },
+		readbook: function(url){
+			window.location.href = url;
+		}
 	  }
 	})
   </script>
