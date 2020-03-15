@@ -47,13 +47,10 @@
 		position:fixed;
 	  }
   	  .list1  {
-	    max-height: 650px;
+	    max-height: 500px;
 	    
 	  }	
-	  .list2  {
-	    max-height: 660px;
-	  		  
-	  }			
+		
 	  /* 未访问链接*/
 	  a:link {
 	  	text-decoration:none;
@@ -145,8 +142,6 @@
 			<el-scrollbar 	
 				wrap-class="list1" 
 				wrap-style="font-family:Cursive;" 
-				view-style="" 
-				view-class="view-box" 
 				:native="false">
 				<ul>
 					<li v-for="content in contents"><a name="chapterlink" :id="content.id"  v-on:click="selectchapter(content.chapterNo)">{{content.name}}</a></li>
@@ -174,8 +169,7 @@
 			</div>
 			<div id='translate'>
 				<el-scrollbar 	
-					wrap-class="list2" 
-					view-class="view-box1" 
+					wrap-class="list1" 
 					:native="false">
 					<div>{{simpleChineseContext}}</div>
 					<div v-for="result in explainContext">
@@ -297,10 +291,12 @@
 					document.getElementById('book').innerHTML = "";				
 					document.getElementById('book').innerHTML = response.data;
 					_self.loading = false;
+					/*
 					if(param1 == 'init'){
 						//初始化时加载第一章节，此章节目录文字样式改变
 						document.getElementById('chapter1').className='selectedChapter';
 					}
+					*/
 					//成功后更新当前繁简状态
 					if(language == "simple"){
 						_self.currentLanguage = "simple"
