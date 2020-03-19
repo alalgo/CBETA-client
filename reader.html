@@ -36,15 +36,16 @@
 	  }
 	  .explainContextclass {
 		position:fixed;
-		top:30px;
+		top:25px;
 	  }
 	  .tools{
-		margin-left:155px;
+		margin-left:75px;
 		margin-bottom:24px;
 		font-size:20px;
 	  }
 	  .left{
 		position:fixed;
+		width:80px;
 	  }
   	  .list1  {
 	    max-height: 500px;
@@ -138,7 +139,11 @@
 	  <!-- 左侧区域 返回主页图标 + 目录-->
 	  <el-col :span="2" :offset="1">
 		  <div class="left">
-			<a href="index.html"><img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" /></a>
+			<!--
+			<a href="index.html">
+				<img src="./resources/images/fojing.png" alt="picture" width="80px" height="80px" />
+			</a>
+			-->
 			<el-scrollbar 	
 				wrap-class="list1" 
 				wrap-style="font-family:Cursive;" 
@@ -150,13 +155,17 @@
 		  </div>		  
 	  </el-col> 
 	  <!-- 中间区域 经文-->
-	  <el-col :span="13"  :offset="4" v-loading="loading" element-loading-text="正在加载">
+	  <el-col :span="14"  :offset="4" v-loading="loading" element-loading-text="正在加载">
 			<div id="failmsg" v-if="requesterror">加载失败请刷新重试</div>
 			<div class="grid-content" id="book" style="font-family:Cursive;font-size:140%" @mouseup = "selectcontent"></div>	
 	  </el-col>
 	  <!-- 右侧区域 发送kindle + 翻译 + 改变字体大小 -->
-	  <el-col :span="4"  :offset="1">
-		<div class='explainContextclass'>		
+	  <el-col :span="3"  >
+		<div class='explainContextclass'>	
+			<div>
+				<el-button plain size="small" icon="el-icon-close"  circle style="margin-left:284px;margin-top:8px;" v-on:click="closereader">
+				</el-button>
+			</div>
 			<div class="tools">
 				<a title='取消收藏' v-if="staron" v-on:click="favoriteBook"><i class="el-icon-star-on"></i></a>
 				<a title='收藏' v-else v-on:click="favoriteBook"><i class="el-icon-star-off"></i></a>
@@ -165,7 +174,7 @@
 				&nbsp &nbsp	
 				<a title='下载' id="downloadid" v-on:click="download"><i class="el-icon-download"></i></a>
 				&nbsp &nbsp	
-				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>
+				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>				
 			</div>
 			<div id='translate'>
 				<el-scrollbar 	
@@ -173,9 +182,8 @@
 					:native="false">
 					<div>{{simpleChineseContext}}</div>
 					<div v-for="result in explainContext">
-						{{result.term}}: {{result.desc.substring(0,result.desc.length-5)}}
-						<br/>
-						&nbsp &nbsp &nbsp &nbsp--《{{result.dict_name_zh}}》
+						<span v-html="result.desc.substring(0,result.desc.length-5)"></span>
+						&nbsp &nbsp &nbsp &nbsp &nbsp--《{{result.dict_name_zh}}》
 					</div>
 				</el-scrollbar>
 			</div>
@@ -242,12 +250,12 @@
 		});
 		//判断收藏与否
 		var _self=this;
-		var cbetaworks = sessionStorage.getItem("cbetaworks");
+		var cbetaworks = localStorage.getItem("cbetaworks");
 		if(cbetaworks == null){
 			this.getFavoriteBook();
 		}
-		cbetaworks = sessionStorage.getItem("cbetaworks");
-		//sessionStorage中不能存数组只能存字符串，随意数组按字符串存入后取出来需要转为数组
+		cbetaworks = localStorage.getItem("cbetaworks");
+		//localStorage中不能存数组只能存字符串，随意数组按字符串存入后取出来需要转为数组
 		if(cbetaworks != null){
 			cbetaworks = cbetaworks.split(',')		
 			for(j = 0; j < cbetaworks.length; j++){
@@ -271,6 +279,9 @@
 			//this.axiosrequest(url);
 			this.getbookcontent(chapterNo);
 		},
+		closereader: function(){
+			window.history.back(-1); 
+		},
 		getbookcontent: function (chapterNo,param1,language){
 			var _self=this;
 			_self.loading = true;
@@ -280,7 +291,7 @@
 				dataType: "json",
 				async: true,
 				type: "GET",   //请求方式
-				//headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
+				//headers:{"Authorization": 'Bearer '+localStorage.getItem("cbetatoken")},
 				data:{"BookName":_self.bookname,
 					  "Chapters":_self.bookchapters,
 					  "Work":_self.bookwork,
@@ -323,35 +334,7 @@
 					_self.loading = false;		
 				}
 			});
-		},
-		/*
-		axiosrequest: function (url,param1){
-			var _self=this;
-			_self.loading = true;
-			_self.requesterror = false;
-			$.ajax({
-				url: url,    
-				dataType: "html",
-				async: true,
-				type: "GET",   //请求方式
-				success: function(response) {
-					document.getElementById('book').innerHTML = response;
-					_self.loading = false;
-					//新章节从第一行开始展示
-					document.body.scrollTop = document.documentElement.scrollTop = 0;
-					if(param1 == 'init'){
-						//初始化时加载第一章节，此章节目录文字样式改变
-						document.getElementById('chapter1').className='selectedChapter';
-					}	
-				},
-				error: function() {
-					_self.requesterror = true;
-					_self.loading = false;		
-				}
-			});
-		},
-		*/
-		
+		},		
 		/*
 		*获取鼠标选中文本，然后繁简翻译、查询佛学词典
 		*/
@@ -388,18 +371,18 @@
 				async: false,
 				type: "get",
 				contentType: "application/json",
-				headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
-				data:{"username":sessionStorage.getItem("cbetausername")},
+				headers:{"Authorization": 'Bearer '+localStorage.getItem("cbetatoken")},
+				data:{"username":localStorage.getItem("cbetausername")},
 				success: function(response) {
 					if(response.code == 200){
 						var works = [];
 						if(response.data == null){
-							sessionStorage.removeItem("cbetaworks");
+							localStorage.removeItem("cbetaworks");
 						}else{
 							for(i=0;i<response.data.length;i++){
 								works.push(response.data[i].Work);
 							}
-							sessionStorage.setItem("cbetaworks",works); 
+							localStorage.setItem("cbetaworks",works); 
 						}
 					}
 				},                 
@@ -433,7 +416,7 @@
 			}			
 		},
 		favoriteBook: function (){
-			if(sessionStorage.getItem("cbetatoken") == null){
+			if(localStorage.getItem("cbetatoken") == null){
 				this.$notify({
 				  message: "请登陆",
 				  position: "top-left",
@@ -449,8 +432,8 @@
 					async: true,
 					type: "get",
 					contentType: "application/json",
-					headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
-					data:{"Username":sessionStorage.getItem("cbetausername"),"BookWork":_self.bookwork},
+					headers:{"Authorization": 'Bearer '+localStorage.getItem("cbetatoken")},
+					data:{"Username":localStorage.getItem("cbetausername"),"BookWork":_self.bookwork},
 					success: function(response) {
 						console.log(response)
 						if(response.code == 200){	
@@ -486,8 +469,8 @@
 					async: true,
 					type: "get",
 					contentType: "application/json",
-					headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
-					data:{"Username":sessionStorage.getItem("cbetausername"),"BookWork":_self.bookwork},
+					headers:{"Authorization": 'Bearer '+localStorage.getItem("cbetatoken")},
+					data:{"Username":localStorage.getItem("cbetausername"),"BookWork":_self.bookwork},
 					success: function(response) {
 						console.log(response)
 						if(response.code == 200){	

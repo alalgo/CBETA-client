@@ -8,6 +8,7 @@
 	<script src="./resources/js/FontsLib.js"></script>
     <script src="./resources/js/TraditionToSimple_CN.js"></script>	
 	<script src="./resources/js/jquery-3.4.1.min.js"></script>
+	<script src="./resources/js/myutils.js"></script>	
 	<style>
 	  .el-row {
 		margin-bottom: 20px;
@@ -79,7 +80,6 @@
 			</a>
 		  </div>
 	   </el-col>	   
-	  <!--<el-col :span="1" ><div class="grid-content">繁/简</div></el-col>-->
 	  <el-col :span="1" >
 		  <div class="grid-content">
 			  <a href="https://github.com/alalgo/CBETA-client/issues" target='_blank' title='问题与建议'>
@@ -102,10 +102,6 @@
 	</el-row>
 	<el-row >
 	  <el-col :span="10" :offset="7">
-			<!--
-			<el-input v-model="inputvalue" placeholder="经名  繁/简" @change="submitsear"   suffix-icon="el-icon-search" icon-click="submitsear">
-			</el-input>
-			-->
 		    <el-input placeholder="经名  繁/简" v-model="inputvalue" class="input-with-select" @change="submitsear" >
 				<el-button slot="append" icon="el-icon-search"></el-button>
 		    </el-input>
@@ -121,7 +117,6 @@
   </body>
 
   <script>
-  //@change="submitsear"  onkeyup="submitsear" 
     new Vue({
       el: '#app',
       data: {
@@ -135,12 +130,13 @@
 		islogin: false
 	  },	
 	  mounted: function() {
-		var token = sessionStorage.getItem("cbetatoken");
+		var token = localStorage.getItem("cbetatoken");
 		if( token != '' && token != null){
 			this.islogin = true
-		}
+		}	
 	  },	  
 	  methods: {
+		//查询提交
 		submitsear: function () {
 			var t2s = new TraditionToSimple_CN(); 
 			var tradtion_input = t2s.toTraditionalized(this.inputvalue);
@@ -172,9 +168,9 @@
 						  position: "top-left",
 						  duration: 2000
 						});	
-						sessionStorage.setItem("cbetatoken",response.data); 
-						sessionStorage.setItem("cbetausername",_self.form.username);  
-						_self.islogin = true
+						localStorage.setItem("cbetatoken",response.data); 
+						localStorage.setItem("cbetausername",_self.form.username);  						
+						_self.islogin = true;											
 					}else{
 						_self.$notify({
 						  message: response.message,

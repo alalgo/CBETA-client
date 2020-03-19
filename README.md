@@ -14,7 +14,7 @@
 ### 技术架构
 - 本项目纯前端、无后台    
 - js框架、ui组件库 分别为 ：vuejs 、 element-ui
-
+前端token存储在localstorage中，可多页面共享，而localstorage不能自动过期的问题可通过后台的token自动失效来解决
 
 ### 部署
 - 因为只有前端，将项目直接放入http服务器www目录即可  

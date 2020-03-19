@@ -51,5 +51,7 @@ var util = {
 	//length位数字，不足的前面补0
 	PrefixInteger: function(num, length) {
 		return (Array(length).join('0') + num).slice(-length);
-	}
+	},
+	
+	
 };

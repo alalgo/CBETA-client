@@ -85,8 +85,8 @@
 			async: true,
 			type: "get",
 			contentType: "application/json",
-			headers:{"Authorization": 'Bearer '+sessionStorage.getItem("cbetatoken")},
-			data:{"username":sessionStorage.getItem("cbetausername")},
+			headers:{"Authorization": 'Bearer '+localStorage.getItem("cbetatoken")},
+			data:{"username":localStorage.getItem("cbetausername")},
 			success: function(response) {
 				//console.log(response)
 				if(response.code == 200){
@@ -113,9 +113,9 @@
 			this.menuIndex = key
 			//退出登陆
 			if(key == 3){
-				sessionStorage.removeItem("cbetatoken");
-				sessionStorage.removeItem("cbetausername");
-				sessionStorage.removeItem("cbetaworks");
+				localStorage.removeItem("cbetatoken");
+				localStorage.removeItem("cbetausername");
+				localStorage.removeItem("cbetaworks");
 				window.location.href = 'index.html';				
 			}
 		  },
