@@ -334,15 +334,17 @@
 						_self.currentLanguage = "simple"
 						_self.$notify({
 						  message: "繁体转简体成功",
-						  position: "top-left",
-						  duration: 2000
+						  position: "top-right",
+						  duration: 2000,
+						  offset: 200,
 						});	
 					}else if(language == "tradition"){
 						_self.currentLanguage = "tradition"
 						_self.$notify({
 						  message: "简体转繁体成功",
-						  position: "top-left",
-						  duration: 2000
+						  position: "top-right",
+						  duration: 2000,
+						  offset: 200,
 						});							
 					}else{
 						//非翻译的新章节从第一行开始展示
@@ -444,8 +446,9 @@
 			if(localStorage.getItem("cbetatoken") == null){
 				this.$notify({
 				  message: "请登陆",
-				  position: "top-left",
-				  duration: 2000
+				  position: "top-right",
+				  duration: 2000,
+				  offset: 200,				  
 				});	
 				return;
 			}
@@ -464,24 +467,27 @@
 						if(response.code == 200){	
 							_self.$notify({
 							  message: "取消收藏成功",
-							  position: "top-left",
-							  duration: 2000
+							  position: "top-right",
+							  duration: 2000,
+							  offset: 200,
 							});	
 							_self.staron = false;
 							_self.getFavoriteBook();
 						}else{
 							_self.$notify({
 							  message: response.message,
-							  position: "top-left",
-							  duration: 2000
+							  position: "top-right",
+							  duration: 2000,
+							  offset: 200,
 							});				
 						}
 					},                 
 					error: function(xhr) {
 						_self.$notify({
 						  message: JSON.stringify(xhr),
-						  position: "top-left",
-						  duration: 2000
+						  position: "top-right",
+						  duration: 2000,
+						  offset: 200,
 						});						   
 					}
 					
@@ -501,24 +507,27 @@
 						if(response.code == 200){	
 							_self.$notify({
 							  message: "收藏成功",
-							  position: "top-left",
-							  duration: 2000
+							  position: "top-right",
+							  duration: 2000,
+							  offset: 200,
 							});	
 							_self.staron = true;
 							_self.getFavoriteBook();
 						}else{
 							_self.$notify({
 							  message: response.message,
-							  position: "top-left",
-							  duration: 2000
+							  position: "top-right",
+							  duration: 2000,
+							  offset: 200,
 							});				
 						}
 					},                 
 					error: function(xhr) {
 						_self.$notify({
 						  message: JSON.stringify(xhr),
-						  position: "top-left",
+						  position: "top-right",
 						  duration: 2000,
+						  offset: 200,
 						});						   
 					}
 					
