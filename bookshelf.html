@@ -203,19 +203,14 @@
 				}			
 			}
 			
-			//console.log(categoryname);
 			//请求
 			if(url_all_true.length >0){
-				//console.log("url_all_true");
 				for(j = 0; j<url_all_true.length; j++){
-					console.log(url_all_true[j])
 					this.jqueryajax(url_all_true[j],true,categoryname);
 				}
 			}
 			if(url_all_false.length >0){
-				//console.log("url_all_false");
 				for(k = 0; k<url_all_false.length; k++){
-					//console.log(url_all_false[k])
 					this.jqueryajax(url_all_false[k],false,categoryname);
 				}
 			}
@@ -258,7 +253,6 @@
 							}
 						}
 					}
-					
 					//过滤，获取页面需要的信息
 					for (i = 0; i < _self.pages.length; i++) {
 						var label = _self.pages[i].label;

@@ -55,3 +55,11 @@ var util = {
 	
 	
 };
+
+/*
+全局配置变量
+*/
+const config={
+	goApiHost:'https://alalgo.top/bookapi',
+	//goApiHost:'http://localhost:80',
+}

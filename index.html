@@ -154,7 +154,7 @@
 
 			var _self=this;
 			$.ajax({
-				url: "https://alalgo.top/bookapi/api/v1/user/login",    
+				url: config.goApiHost+"/api/v1/user/login",    
 				dataType: "json",
 				async: true,
 				type: "get",
@@ -187,7 +187,7 @@
 		regist: function(){
 			var _self=this;
 			$.ajax({
-				url: "https://alalgo.top/bookapi/api/v1/user/add",    
+				url: config.goApiHost+"/api/v1/user/add",    
 				dataType: "json",
 				async: true,
 				type: "POST",

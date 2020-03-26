@@ -150,6 +150,11 @@
 	  .selectedChapter {
 		color:#be9567;
 	  }
+	  #downloadprogress{
+		margin-left: 72px;
+		width:223px;
+		margin-top: 10px;
+	  }
 	</style>	
   </head>
   <body>
@@ -197,7 +202,10 @@
 				&nbsp &nbsp	
 				<a title='下载' id="downloadid" v-on:click="download"><i class="el-icon-download"></i></a>
 				&nbsp &nbsp	
-				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>				
+				<a title='发送到kindle'><i class="el-icon-s-promotion"></i></a>	
+			</div>
+			<div id="downloadprogress" v-if="downloading" >
+				<el-progress :percentage="percentage" :color="customColor" :stroke-width="3"></el-progress>
 			</div>
 			<div id='translate'>
 				<el-scrollbar 	
@@ -240,7 +248,10 @@
 		bookchapters:'',
 		staron: false,//是否已经收藏
 		currentChapterNo:1, //当前阅读的章节号
-		currentLanguage:'tradition' //当前经文语言，初始化默认为繁体 ，简体为 simple
+		currentLanguage:'tradition', //当前经文语言，初始化默认为繁体 ，简体为 simple
+		customColor:'#be9567',//进度条颜色
+		percentage: 0,//进度条进度
+		downloading:false,//是否正在下载
 	  },
 	  mounted: function () {
 	    var work = util.getQueryStr("work");
@@ -250,12 +261,10 @@
 		this.bookname = util.getQueryStr("bookname");
 		for (i = 1; i <=juan; i++) { 
 			this.contents.push({name:'卷'+i , 
-								//url:'https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_' + util.PrefixInteger(i,3) + '.html',
 								chapterNo:i,
 								id: 'chapter'+i
 							});
 		}
-		//this.axiosrequest('https://cbdata.dila.edu.tw/v1.2/download/html/' + work + '_001.html','init');
 		this.getbookcontent(1,'init');
 		//阅读进度条
 		document.addEventListener('DOMContentLoaded', function () {
@@ -298,7 +307,6 @@
 			var chapterid = window.event.target.id;
 			document.getElementById(chapterid).className = 'selectedChapter';
 			this.currentChapterNo = chapterNo;
-			//this.axiosrequest(url);
 			this.getbookcontent(chapterNo);
 		},
 		closereader: function(){
@@ -308,20 +316,20 @@
 			var _self=this;
 			_self.loading = true;
 			$.ajax({
-				url: "https://alalgo.top/bookapi/api/v1/book/readBook",    
+				url: config.goApiHost+"/api/v1/book/readBook",    
 				dataType: "json",
 				async: true,
 				type: "GET",   //请求方式
-				//headers:{"Authorization": 'Bearer '+localStorage.getItem("cbetatoken")},
 				data:{"BookName":_self.bookname,
 					  "Chapters":_self.bookchapters,
 					  "Work":_self.bookwork,
 					  "ChapterNo":chapterNo,
-					  "Language":language 
+					  //"Language":language 
 					  },
 				success: function(response) {
-					document.getElementById('book').innerHTML = "";				
-					document.getElementById('book').innerHTML = response.data;
+					var t2s = new TraditionToSimple_CN(); 
+					document.getElementById('book').innerHTML = "";	
+					
 					_self.loading = false;
 					/*
 					if(param1 == 'init'){
@@ -331,6 +339,8 @@
 					*/
 					//成功后更新当前繁简状态
 					if(language == "simple"){
+						document.getElementById('book').innerHTML = t2s.toSimplized(response.data);
+						
 						_self.currentLanguage = "simple"
 						_self.$notify({
 						  message: "繁体转简体成功",
@@ -339,6 +349,7 @@
 						  offset: 200,
 						});	
 					}else if(language == "tradition"){
+						document.getElementById('book').innerHTML = response.data;
 						_self.currentLanguage = "tradition"
 						_self.$notify({
 						  message: "简体转繁体成功",
@@ -347,6 +358,7 @@
 						  offset: 200,
 						});							
 					}else{
+						document.getElementById('book').innerHTML = response.data;
 						//非翻译的新章节从第一行开始展示
 						document.body.scrollTop = document.documentElement.scrollTop = 0;
 					}					
@@ -354,7 +366,7 @@
 				error: function() {
 					_self.loading = false;	
 					_self.$notify({
-					  message: "翻译失败",
+					  message: "加载失败",
 					  position: "top-right",
 					  duration: 2000,
 					  offset: 200,
@@ -393,7 +405,7 @@
 		},
 		getFavoriteBook: function (){
 			$.ajax({
-				url: "https://alalgo.top/bookapi/api/v1/user/getFavoritedBooks",    
+				url: config.goApiHost+"/api/v1/user/getFavoritedBooks",    
 				dataType: "json",
 				async: false,
 				type: "get",
@@ -420,19 +432,38 @@
 		},
 		//下载pdf不预览直接下载，只能使用XMLHttpRequest方案
 		download: function(){
+			if(this.downloading){
+				return;
+			}
+			this.downloading = true;
+			
 			var url = "http://cbdata.dila.edu.tw/v1.2/download/pdf/"+this.bookwork.substr(0, 1)+"/"+this.bookwork+".pdf";
 			console.log("downloadurl:"+url)
-		    var req = new XMLHttpRequest();
+			var _self=this;
+		    var req = new XMLHttpRequest();	
+			//监控下载进度事件			
+			req.onprogress = function (event) {
+				if (event.lengthComputable) {
+					var loaded = parseInt(event.loaded / event.total * 100);
+					console.log(loaded);
+					_self.percentage=loaded;
+				}
+			}
+			//完成事件
+			req.onloadend  = function(){
+				_self.downloading = false;
+			}
+			
 		    req.open("GET", url, true);
 		    req.responseType = "blob";
-			var _self = this;
 		    req.onload = function (event) {
 				var blob = req.response;
 				var link=document.createElement('a');
 				link.href=window.URL.createObjectURL(blob);
 				link.download = _self.bookname+'.pdf';
 				link.click();
-		    };          
+		    };   
+
 		    req.send();
 		},
 		tstranslate: function(){ 
@@ -455,7 +486,7 @@
 			if (this.staron){
 				var _self=this;
 				$.ajax({
-					url: "https://alalgo.top/bookapi/api/v1/user/unFavorite",    
+					url: config.goApiHost+"/api/v1/user/unFavorite",    
 					dataType: "json",
 					async: true,
 					type: "get",
@@ -495,7 +526,7 @@
 			}else{
 				var _self=this;
 				$.ajax({
-					url: "https://alalgo.top/bookapi/api/v1/user/favorite",    
+					url: config.goApiHost+"/api/v1/user/favorite",    
 					dataType: "json",
 					async: true,
 					type: "get",

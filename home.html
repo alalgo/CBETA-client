@@ -80,7 +80,7 @@
 	  mounted: function(){
 		var _self=this;
 		$.ajax({
-			url: "https://alalgo.top/bookapi/api/v1/user/getFavoritedBooks",    
+			url: config.goApiHost+"/api/v1/user/getFavoritedBooks",    
 			dataType: "json",
 			async: true,
 			type: "get",
